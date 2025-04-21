@@ -11,6 +11,12 @@ export class User extends Document {
 
   @Prop({ default: 'Staff' })
   role: string;
+
+  @Prop()
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpires?: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

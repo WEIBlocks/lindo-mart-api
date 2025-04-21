@@ -1,13 +1,14 @@
 import {
   Injectable,
   BadRequestException,
-  UnauthorizedException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from '../schemas/user/user.schema';
+
 
 @Injectable()
 export class AuthService {
@@ -51,5 +52,35 @@ export class AuthService {
       role: 'Staff',
     });
     return newUser.save();
+  }
+
+  // async forgotPassword(email: string) {
+  //   const user = await this.userModel.findOne({ email }).exec();
+  //   if (!user) {
+  //     throw new NotFoundException('User with this email does not exist');
+  //   }
+  //   const resetToken = crypto.randomBytes(32).toString('hex');
+  //   const resetTokenHash = await bcrypt.hash(resetToken, 10);
+  //   user.resetPasswordToken = resetTokenHash;
+  //   user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+  //   await user.save();
+  //   // Send email with resetToken (e.g., using a mail service)
+  //   return { message: 'Password reset link sent to email' };
+  // }
+
+  async resetPassword(userId: string, resetPasswordDto: any) {
+    console.log(userId);
+    const { oldPassword, newPassword } = resetPasswordDto;
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    return { message: 'Password has been changed successfully' };
   }
 }
