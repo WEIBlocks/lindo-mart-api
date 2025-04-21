@@ -7,6 +7,8 @@ import { User, UserSchema } from '../schemas/user/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CommonModule } from 'src/common/common.module';
+import { AlertsModule } from 'src/alerts/alerts.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    CommonModule,
+    AlertsModule
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],

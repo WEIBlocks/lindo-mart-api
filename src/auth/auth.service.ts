@@ -1,20 +1,24 @@
 import {
   Injectable,
   BadRequestException,
-  UnauthorizedException
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from '../schemas/user/user.schema';
-
-
+import { TwilioService } from '../common/twilio.service';
+import { SendGridService } from '../common/sendgrid.service';
+import { AlertsService } from '../alerts/alerts.service';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    @InjectModel(User.name) private userModel: Model<User>
+    @InjectModel(User.name) private userModel: Model<User>,
+    private readonly twilioService: TwilioService,
+    private readonly sendgridService: SendGridService,
+    private readonly alertsService: AlertsService
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
@@ -32,6 +36,30 @@ export class AuthService {
   async login(loginDto: any) {
     const user = await this.validateUser(loginDto.username, loginDto.password);
     const payload = { username: user.username, sub: user._id, role: user.role };
+
+    // Send SMS alert for successful login
+    if (user.phoneNumber) {
+      await this.alertsService.sendAlert(
+        'You have successfully logged in to Lindo Mart.',
+        'Staff',
+        user._id, // relatedId login user id
+        user._id
+      );
+     
+      console.log('SMS alert sent successfully');
+    }
+
+
+    // Send email alert for successful login
+    // if (user.email) {
+    //   await this.sendgridService.sendEmail(
+    //     user.email,
+    //     'Login Alert',
+    //     'You have successfully logged in to Lindo Mart.'  
+    //   );
+    //   console.log('Email alert sent successfully');
+    // }
+
     return {
       access_token: this.jwtService.sign(payload),
     };
@@ -50,6 +78,8 @@ export class AuthService {
       ...userDto,
       password: hashedPassword,
       role: 'Staff',
+      phoneNumber: userDto.phoneNumber,
+      email: userDto.email,
     });
     return newUser.save();
   }

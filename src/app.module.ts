@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { FormsModule } from './forms/forms.module';
+import { AlertsModule } from './alerts/alerts.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { FormsModule } from './forms/forms.module';
     AuthModule,
     UserModule,
     FormsModule,
+    AlertsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
