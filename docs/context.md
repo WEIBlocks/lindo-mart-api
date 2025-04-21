@@ -52,12 +52,17 @@ npx tailwindcss init -p
 - Form types:
   - Inventory Exceptions
   - Slow Moving Items
-  - Equipment Alerts
-  - Health & Safety
-  - Customer Feedback
+  - Essentials Alerts
+  - Equipment Facility Alerts
+  - Alert Reminders & Follow Ups
+  - Handover Notes
+  - Customer Feedback (Complaints, Kudos, & Recommendations)
+  - Health & Safety Alerts
 - Endpoints:
   - `POST /forms/submit`
-  - `GET /forms/:id`
+  - `GET /forms/user/forms`
+  - `GET /forms/user/form/:id` for status
+  
 
 ### 6. **Alert/Notification Module**
 - WebSocket gateway using `@nestjs/websockets`
@@ -70,8 +75,14 @@ npx tailwindcss init -p
 ### 7. **Admin Dashboard API**
 - Endpoints:
   - `GET /dashboard/forms`
+  - `GET /dashboard/user-forms`
+  - `POST /dashboard/submit-form`
+  - `GET /dashboard/submitted-forms`
+  - `POST /dashboard/trigger-followup`
+  - `GET /dashboard/submission-status`
   - `GET /dashboard/alerts`
   - `POST /dashboard/notifications/preferences`
+  //TODO: twillo SMS/Email notifications, log all notifications of SMS/Email in dashboard
 
 ---
 
