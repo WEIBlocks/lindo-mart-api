@@ -28,7 +28,7 @@ export class AlertsService {
     role: string,
     relatedId: string,
     userId?: string
-  ) {
+  ): Promise<string> {
     const users = userId
       ? await this.userModel.find({ _id: userId }).exec()
       : await this.userModel.find({ role }).exec();
@@ -56,13 +56,15 @@ export class AlertsService {
       // }
 
       // Store alert with categories
-      await this.alertModel.create({
+      const alert = await this.alertModel.create({
         message,
         role,
         userId: user._id,
         categories,
         relatedId: relatedId,
       });
+
+      return alert._id.toString();
     }
   }
 
@@ -86,7 +88,20 @@ export class AlertsService {
     const relatedId = alert.relatedId;
 
     // Update the status of the related form or event
-    await this.formModel.findByIdAndUpdate(relatedId, { status }).exec();
+    const form = await this.formModel
+      .findByIdAndUpdate(relatedId, { status }, { new: true })
+      .exec();
+
+    if (form) {
+      form.history.push({
+        status,
+        timestamp: new Date(),
+        userId,
+        fromUserId: null,
+        toUserId: null,
+      });
+      await form.save();
+    }
 
     return { message: 'Status updated successfully' };
   }

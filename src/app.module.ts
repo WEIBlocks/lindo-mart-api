@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { FormsModule } from './forms/forms.module';
 import { AlertsModule } from './alerts/alerts.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AlertsModule } from './alerts/alerts.module';
     UserModule,
     FormsModule,
     AlertsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

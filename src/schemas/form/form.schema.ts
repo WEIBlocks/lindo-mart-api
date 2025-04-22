@@ -17,6 +17,32 @@ export class Form extends Document {
 
   @Prop({ default: Date.now })
   createdAt: Date;
+
+  @Prop({ required: true })
+  recipient: string;
+
+  @Prop()
+  alertId?: string;
+
+  @Prop({
+    type: [
+      {
+        status: String,
+        timestamp: Date,
+        userId: String,
+        fromUserId: String,
+        toUserId: String,
+      },
+    ],
+    default: [],
+  })
+  history: {
+    status: string;
+    timestamp: Date;
+    userId: string;
+    fromUserId: string;
+    toUserId: string;
+  }[];
 }
 
 export const FormSchema = SchemaFactory.createForClass(Form);

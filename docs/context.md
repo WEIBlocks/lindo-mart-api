@@ -61,7 +61,8 @@ npx tailwindcss init -p
 - Endpoints:
   - `POST /forms/submit`
   - `GET /forms/user/forms`
-  - `GET /forms/user/form/:id` for status
+  - `GET /forms/user/form/:id` (status and history included)
+  - `PATCH /forms/:formId/status`
   
 
 ### 6. **Alert/Notification Module**
@@ -69,21 +70,19 @@ npx tailwindcss init -p
 - SMS integration (Twilio or similar)
 - Store alerts in MongoDB with logs (for auditing)
 - Endpoints:
-  - `POST /alerts/send`
-  - `GET /alerts/history`
+  - Helper Function to send in-app, sms and email alerts
+  - `GET /alerts/all`
+  - `GET /alerts/user`
+  - `PATCH /alerts/user/:id/status`
 
 ### 7. **Admin Dashboard API**
 - Endpoints:
   - `GET /dashboard/forms`
   - `GET /dashboard/user-forms`
-  - `POST /dashboard/submit-form`
-  - `GET /dashboard/submitted-forms`
+  - `POST /dashboard/move-form`
+  - `GET /dashboard/moved-forms`
   - `POST /dashboard/trigger-followup`
-  - `GET /dashboard/submission-status`
-  - `GET /dashboard/alerts`
-  - `POST /dashboard/notifications/preferences`
-  //TODO: twillo SMS/Email notifications, log all notifications of SMS/Email in dashboard
-
+  - `GET /dashboard/moved-forms-status`
 ---
 
 ## 🎨 Frontend Development (Next.js) -- take inspiration from https://www.checkbox.ai/ for UI

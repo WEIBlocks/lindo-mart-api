@@ -6,6 +6,7 @@ import {
   Body,
   Request,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { FormsService } from './forms.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -18,7 +19,11 @@ export class FormsController {
 
   @Post('submit')
   async submitForm(@Request() req: CustomRequest, @Body() formData: any) {
-    return this.formsService.submitForm(req.user.userId, formData);
+    return this.formsService.submitForm(
+      req.user.userId,
+      formData,
+      formData.recipient
+    );
   }
 
   @Get('user-forms')
@@ -32,5 +37,18 @@ export class FormsController {
     @Param('id') formId: string
   ) {
     return this.formsService.getFormStatus(req.user.userId, formId);
+  }
+
+  @Patch(':formId/status')
+  async updateFormStatus(
+    @Request() req: CustomRequest,
+    @Param('formId') formId: string,
+    @Body('status') newStatus: string
+  ) {
+    return this.formsService.updateFormStatus(
+      req.user.userId,
+      formId,
+      newStatus
+    );
   }
 }
