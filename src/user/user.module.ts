@@ -15,5 +15,6 @@ import { User, UserSchema } from '../schemas/user/user.schema';
   ],
   controllers: [UserController],
   providers: [UserService],
+  exports: [MongooseModule],
 })
 export class UserModule {}

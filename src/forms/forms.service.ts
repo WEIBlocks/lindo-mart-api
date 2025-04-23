@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Form } from '../schemas/form/form.schema';
 import { AlertsService } from '../alerts/alerts.service';
+import { User } from '../schemas/user/user.schema';
 
 @Injectable()
 export class FormsService {
   constructor(
     @InjectModel(Form.name) private formModel: Model<Form>,
+    @InjectModel(User.name) private userModel: Model<User>,
     private alertsService: AlertsService
   ) {}
 
@@ -107,6 +109,17 @@ export class FormsService {
     });
     await form.save();
 
+    // Update user's movedForms
+    const user = await this.userModel.findById(userId).exec();
+    if (user) {
+      user.movedForms.push({
+        formId,
+        recipientId: newRecipient,
+        status: newStatus,
+      });
+      await user.save();
+    }
+
     // Generate alert for the new recipient
     await this.alertsService.sendAlert(
       `Form moved to you with status: ${newStatus}`,
@@ -116,5 +129,13 @@ export class FormsService {
     );
 
     return { message: 'Form moved successfully' };
+  }
+
+  async getMovedForms(userId: string) {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user.movedForms;
   }
 }

@@ -82,7 +82,6 @@ npx tailwindcss init -p
   - `POST /dashboard/move-form`
   - `GET /dashboard/moved-forms`
   - `POST /dashboard/trigger-followup`
-  - `GET /dashboard/moved-forms-status`
 ---
 
 ## 🎨 Frontend Development (Next.js) -- take inspiration from https://www.checkbox.ai/ for UI

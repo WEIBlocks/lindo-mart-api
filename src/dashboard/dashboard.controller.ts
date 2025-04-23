@@ -6,24 +6,24 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { FormsService } from '../forms/forms.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CustomRequest } from '../types/custom-request.interface';
+import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard)
 export class DashboardController {
-  constructor(private readonly formsService: FormsService) {}
+  constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('forms')
   // TODO: Add Super-Admin Guard
   async getAllForms() {
-    return this.formsService.getAllForms();
+    return this.dashboardService.getAllForms();
   }
 
   @Get('user-forms')
   async getUserRelatedForms(@Request() req: CustomRequest) {
-    return this.formsService.getUserRelatedForms(req.user.userId);
+    return this.dashboardService.getUserRelatedForms(req.user.userId);
   }
 
   @Post('move-form')
@@ -33,11 +33,29 @@ export class DashboardController {
     @Body('newRecipient') newRecipient: string,
     @Body('newStatus') newStatus: string
   ) {
-    return this.formsService.moveForm(
+    return this.dashboardService.moveForm(
       req.user.userId,
       formId,
       newRecipient,
       newStatus
+    );
+  }
+
+  @Get('moved-forms')
+  async getMovedForms(@Request() req: CustomRequest) {
+    return this.dashboardService.getMovedForms(req.user.userId);
+  }
+
+  @Post('trigger-followup')
+  async triggerFollowUp(
+    @Request() req: CustomRequest,
+    @Body('formId') formId: string,
+    @Body('recipientId') recipientId: string
+  ) {
+    return this.dashboardService.triggerFollowUp(
+      req.user.userId,
+      formId,
+      recipientId
     );
   }
 }
