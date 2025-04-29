@@ -48,7 +48,7 @@ export class UserService {
   }
 
   async getAllUsers() {
-    return this.userModel.find().exec();
+    return this.userModel.find().select('username role').exec();
   }
 
   async deleteUser(id: string) {

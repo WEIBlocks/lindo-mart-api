@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Form } from '../schemas/form/form.schema';
 import { AlertsService } from '../alerts/alerts.service';
 import { User } from '../schemas/user/user.schema';
+import { log } from 'console';
 
 @Injectable()
 export class FormsService {
@@ -19,6 +20,13 @@ export class FormsService {
       userId,
       recipient,
       status: 'Pending',
+      history: [{
+        status: 'Pending',
+        timestamp: new Date(),
+        userId,
+        fromUserId: userId,
+        toUserId: recipient,
+      }]
     });
     const savedForm = await newForm.save();
 
@@ -49,8 +57,14 @@ export class FormsService {
     return form;
   }
 
-  async updateFormStatus(userId: string, formId: string, newStatus: string) {
-    const form = await this.formModel.findOne({ _id: formId, userId }).exec();
+  async updateFormStatus(user: any, formId: string, newStatus: string) {
+    const userId = user.userId;
+    // Find form where recipient is either the user's ID or their role
+    const form = await this.formModel.findOne({
+      _id: formId,
+      $or: [{ recipient: userId }, { recipient: user.role }]
+    }).exec();
+    
     if (!form) {
       throw new NotFoundException('Form not found');
     }
@@ -83,14 +97,26 @@ export class FormsService {
   }
 
   async getUserRelatedForms(userId: string) {
-    return this.formModel.find({ recipient: userId }).exec();
+    // First, get the user to check their role
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Find forms where:
+    // 1. The user is directly specified as the recipient
+    // 2. The user's role is specified as the recipient
+    return this.formModel
+      .find({
+        $or: [{ recipient: userId }, { recipient: user.role }],
+      })
+      .exec();
   }
 
   async moveForm(
     userId: string,
     formId: string,
-    newRecipient: string,
-    newStatus: string
+    newRecipient: string
   ) {
     const form = await this.formModel.findById(formId).exec();
     if (!form) {
@@ -98,10 +124,9 @@ export class FormsService {
     }
 
     // Update form status and recipient
-    form.status = newStatus;
     form.recipient = newRecipient;
     form.history.push({
-      status: newStatus,
+      status: form.status,
       timestamp: new Date(),
       userId,
       fromUserId: userId,
@@ -115,14 +140,14 @@ export class FormsService {
       user.movedForms.push({
         formId,
         recipientId: newRecipient,
-        status: newStatus,
+        status: form.status,
       });
       await user.save();
     }
 
     // Generate alert for the new recipient
     await this.alertsService.sendAlert(
-      `Form moved to you with status: ${newStatus}`,
+      `Form moved to you with status: ${form.status}`,
       newRecipient,
       formId,
       userId
@@ -136,6 +161,28 @@ export class FormsService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return user.movedForms;
+
+    const movedForms = user.movedForms;
+    const populatedForms = await Promise.all(
+      movedForms.map(async (movedForm) => {
+        const form = await this.formModel.findById(movedForm.formId).exec();
+        return {
+          formId: movedForm.formId,
+          formData: form ? {
+            status: form.status,
+            _id: form._id,
+            userId: form.userId,
+            formType: form.formType,
+            formData: form.formData,
+            recipient: form.recipient,
+            createdAt: form.createdAt,
+            history: form.history,
+            alertId: form.alertId
+          } : null
+        };
+      })
+    );
+
+    return populatedForms;
   }
 }

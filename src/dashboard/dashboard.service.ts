@@ -24,10 +24,9 @@ export class DashboardService {
   async moveForm(
     userId: string,
     formId: string,
-    newRecipient: string,
-    newStatus: string
+    newRecipient: string
   ) {
-    return this.formsService.moveForm(userId, formId, newRecipient, newStatus);
+    return this.formsService.moveForm(userId, formId, newRecipient);
   }
 
   async getMovedForms(userId: string) {

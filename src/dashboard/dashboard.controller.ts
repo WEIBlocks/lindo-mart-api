@@ -31,13 +31,11 @@ export class DashboardController {
     @Request() req: CustomRequest,
     @Body('formId') formId: string,
     @Body('newRecipient') newRecipient: string,
-    @Body('newStatus') newStatus: string
   ) {
     return this.dashboardService.moveForm(
       req.user.userId,
       formId,
-      newRecipient,
-      newStatus
+      newRecipient
     );
   }
 

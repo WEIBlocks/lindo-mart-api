@@ -38,16 +38,16 @@ export class AuthService {
     const payload = { username: user.username, sub: user._id, role: user.role };
 
     // Send SMS alert for successful login
-    if (user.phoneNumber) {
-      await this.alertsService.sendAlert(
-        'You have successfully logged in to Lindo Mart.',
-        'Staff',
-        user._id, // relatedId login user id
-        user._id
-      );
+    // if (user.phoneNumber) {
+    //   await this.alertsService.sendAlert(
+    //     'You have successfully logged in to Lindo Mart.',
+    //     'Staff',
+    //     user._id, // relatedId login user id
+    //     user._id
+    //   );
      
-      console.log('SMS alert sent successfully');
-    }
+    //   console.log('SMS alert sent successfully');
+    // }
 
 
     // Send email alert for successful login
@@ -62,6 +62,7 @@ export class AuthService {
 
     return {
       access_token: this.jwtService.sign(payload),
+      user: user,
     };
   }
 

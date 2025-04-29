@@ -46,7 +46,7 @@ export class FormsController {
     @Body('status') newStatus: string
   ) {
     return this.formsService.updateFormStatus(
-      req.user.userId,
+      req.user,
       formId,
       newStatus
     );

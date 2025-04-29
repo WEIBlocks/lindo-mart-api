@@ -3,24 +3,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Alert } from '../schemas/alert/alert.schema';
 import { User } from '../schemas/user/user.schema';
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Form } from '../schemas/form/form.schema';
 import { TwilioService } from '../common/twilio.service';
 import { SendGridService } from '../common/sendgrid.service';
-import { Form } from '../schemas/form/form.schema';
+import { AlertsGateway } from './alerts.gateway';
 
 @Injectable()
-@WebSocketGateway()
 export class AlertsService {
-  @WebSocketServer()
-  server: Server;
-
   constructor(
     @InjectModel(Alert.name) private alertModel: Model<Alert>,
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Form.name) private formModel: Model<Form>,
     private twilioService: TwilioService,
-    private sendGridService: SendGridService
+    private sendGridService: SendGridService,
+    private alertsGateway: AlertsGateway
   ) {}
 
   async sendAlert(
@@ -29,21 +25,33 @@ export class AlertsService {
     relatedId: string,
     userId?: string
   ): Promise<string> {
-    const users = userId
-      ? await this.userModel.find({ _id: userId }).exec()
-      : await this.userModel.find({ role }).exec();
+    
+    const validRoles = ['Staff', 'Supervisor', 'Management', 'Super-Admin'];
+    const users = validRoles.includes(role)
+      ? await this.userModel.find({ role }).exec()
+      : await this.userModel.find({ _id: role }).exec();
+
+    let lastAlertId: string;
 
     for (const user of users) {
       const categories = ['in-app'];
 
-      // WebSocket
-      this.server.to(user._id.toString()).emit('alert', message);
+      // Send WebSocket notification
+      if (user._id) {
+        await this.alertsGateway.sendNotificationToUser(
+          user._id.toString(),
+          message
+        );
+      } 
+      // else {
+      //   await this.alertsGateway.sendNotificationByRole(role, message);
+      // }
 
       // SMS
-      if (user.phoneNumber) {
-        await this.twilioService.sendSMS(user.phoneNumber, message);
-        categories.push('sms');
-      }
+      // if (user.phoneNumber) {
+      //   await this.twilioService.sendSMS(user.phoneNumber, message);
+      //   categories.push('sms');
+      // }
 
       // Email
       // if (user.email) {
@@ -64,8 +72,10 @@ export class AlertsService {
         relatedId: relatedId,
       });
 
-      return alert._id.toString();
+      lastAlertId = alert._id.toString();
     }
+
+    return lastAlertId;
   }
 
   async getAllAlerts() {
@@ -101,8 +111,18 @@ export class AlertsService {
         toUserId: null,
       });
       await form.save();
+
+      // Send notification about status update
+      await this.sendAlert(
+        `Form ${form._id} status updated to ${status}`,
+        'Staff',
+        form._id.toString(),
+        form.userId
+      );
     }
 
     return { message: 'Status updated successfully' };
   }
 }
+
+
