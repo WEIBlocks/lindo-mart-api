@@ -21,15 +21,22 @@ export class AlertsService {
 
   async sendAlert(
     message: string,
-    role: string,
     relatedId: string,
-    userId?: string
+    userId?: string, // who is changing the status
+    role?: string, // it can be single user id or role
+    userIds?: string[] // it can be array of user ids
   ): Promise<string> {
-    
     const validRoles = ['Staff', 'Supervisor', 'Management', 'Super-Admin'];
-    const users = validRoles.includes(role)
-      ? await this.userModel.find({ role }).exec()
-      : await this.userModel.find({ _id: role }).exec();
+    let users;
+
+    // Check if userIds are provided, if so, fetch users by IDs
+    if (userIds && userIds.length > 0) {
+      users = await this.userModel.find({ _id: { $in: userIds } }).exec();
+    } else {
+      users = validRoles.includes(role)
+        ? await this.userModel.find({ role }).exec()
+        : await this.userModel.find({ _id: role }).exec();
+    }
 
     let lastAlertId: string;
 
@@ -42,7 +49,7 @@ export class AlertsService {
           user._id.toString(),
           message
         );
-      } 
+      }
       // else {
       //   await this.alertsGateway.sendNotificationByRole(role, message);
       // }
@@ -124,5 +131,3 @@ export class AlertsService {
     return { message: 'Status updated successfully' };
   }
 }
-
-

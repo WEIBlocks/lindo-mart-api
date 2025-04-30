@@ -6,8 +6,8 @@ export class Alert extends Document {
   @Prop({ required: true })
   message: string;
 
-  @Prop({ required: true })
-  role: string;
+  @Prop()
+  role?: string;
 
   @Prop()
   userId?: string;
@@ -16,7 +16,10 @@ export class Alert extends Document {
   categories: string[];
 
   @Prop()
-  relatedId?: string;
+      relatedId?: string;
+
+  @Prop({ type: [String] })
+  userIds?: string[];
 
   @Prop({ default: Date.now })
   createdAt: Date;

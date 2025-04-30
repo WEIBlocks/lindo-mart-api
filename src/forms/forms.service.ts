@@ -20,22 +20,25 @@ export class FormsService {
       userId,
       recipient,
       status: 'Pending',
-      history: [{
-        status: 'Pending',
-        timestamp: new Date(),
-        userId,
-        fromUserId: userId,
-        toUserId: recipient,
-      }]
+      history: [
+        {
+          status: 'Pending',
+          timestamp: new Date(),
+          userId,
+          fromUserId: userId,
+          toUserId: recipient,
+        },
+      ],
     });
     const savedForm = await newForm.save();
 
     // Generate alert for the recipient
     const alertId = await this.alertsService.sendAlert(
       'New Form Received',
-      recipient,
       savedForm._id.toString(),
-      userId
+      userId,
+      recipient,
+      null
     );
 
     // Update form with alertId
@@ -50,7 +53,12 @@ export class FormsService {
   }
 
   async getFormStatus(userId: string, formId: string) {
-    const form = await this.formModel.findOne({ _id: formId, userId }).exec();
+    const form = await this.formModel
+      .findOne({
+        _id: formId,
+        // $or: [{ userId }, { recipient: userId }],
+      })
+      .exec();
     if (!form) {
       throw new NotFoundException('Form not found');
     }
@@ -60,11 +68,13 @@ export class FormsService {
   async updateFormStatus(user: any, formId: string, newStatus: string) {
     const userId = user.userId;
     // Find form where recipient is either the user's ID or their role
-    const form = await this.formModel.findOne({
-      _id: formId,
-      $or: [{ recipient: userId }, { recipient: user.role }]
-    }).exec();
-    
+    const form = await this.formModel
+      .findOne({
+        _id: formId,
+        $or: [{ recipient: userId }, { recipient: user.role }],
+      })
+      .exec();
+
     if (!form) {
       throw new NotFoundException('Form not found');
     }
@@ -80,14 +90,20 @@ export class FormsService {
     });
     await form.save();
 
-    // Update alert status if alertId exists
-    // if (form.alertId) {
-    //   await this.alertsService.updateAlertStatus(
-    //     userId,
-    //     form.alertId,
-    //     newStatus
-    //   );
-    // }
+    // Extract unique user IDs from form.history
+    const userIds = Array.from(
+      new Set(
+        form.history.flatMap((entry) => [entry.fromUserId, entry.toUserId])
+      )
+    ).filter((id) => id); // Filter out any undefined or null values
+
+    await this.alertsService.sendAlert(
+      `Form ${form._id} status has been updated to ${newStatus}`,
+      form._id.toString(),
+      userId,
+      null,
+      userIds
+    );
 
     return { message: 'Form status updated successfully' };
   }
@@ -113,11 +129,7 @@ export class FormsService {
       .exec();
   }
 
-  async moveForm(
-    userId: string,
-    formId: string,
-    newRecipient: string
-  ) {
+  async moveForm(userId: string, formId: string, newRecipient: string) {
     const form = await this.formModel.findById(formId).exec();
     if (!form) {
       throw new NotFoundException('Form not found');
@@ -148,9 +160,10 @@ export class FormsService {
     // Generate alert for the new recipient
     await this.alertsService.sendAlert(
       `Form moved to you with status: ${form.status}`,
-      newRecipient,
       formId,
-      userId
+      userId,
+      newRecipient,
+      null
     );
 
     return { message: 'Form moved successfully' };
@@ -168,17 +181,19 @@ export class FormsService {
         const form = await this.formModel.findById(movedForm.formId).exec();
         return {
           formId: movedForm.formId,
-          formData: form ? {
-            status: form.status,
-            _id: form._id,
-            userId: form.userId,
-            formType: form.formType,
-            formData: form.formData,
-            recipient: form.recipient,
-            createdAt: form.createdAt,
-            history: form.history,
-            alertId: form.alertId
-          } : null
+          formData: form
+            ? {
+                status: form.status,
+                _id: form._id,
+                userId: form.userId,
+                formType: form.formType,
+                formData: form.formData,
+                recipient: form.recipient,
+                createdAt: form.createdAt,
+                history: form.history,
+                alertId: form.alertId,
+              }
+            : null,
         };
       })
     );

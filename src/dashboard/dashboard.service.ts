@@ -47,7 +47,12 @@ export class DashboardService {
     }
 
     const message = `Follow-up required for form ${formId}`;
-    await this.alertsService.sendAlert(message, recipientId, formId, userId);
+    await this.alertsService.sendAlert(message,
+      formId, 
+      userId,
+      recipientId, 
+      null,
+    );
 
     return { message: 'Follow-up alert sent successfully' };
   }

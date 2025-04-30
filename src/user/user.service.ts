@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../schemas/user/user.schema';
 import { JwtService } from '@nestjs/jwt';
+import { AlertsService } from 'src/alerts/alerts.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly alertsService: AlertsService
   ) {}
 
   async getProfile(userId: string) {
@@ -44,6 +46,13 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    this.alertsService.sendAlert(
+      `User ${user.username} role has been updated to ${role}`,
+      user._id.toString(),
+      user._id.toString(),
+      user._id.toString(),
+      null,
+    );
     return user.toObject();
   }
 

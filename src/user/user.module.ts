@@ -1,12 +1,14 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { User, UserSchema } from '../schemas/user/user.schema';
+import { AlertsModule } from 'src/alerts/alerts.module';
 
 @Module({
   imports: [
+    forwardRef(() => AlertsModule),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
@@ -15,6 +17,6 @@ import { User, UserSchema } from '../schemas/user/user.schema';
   ],
   controllers: [UserController],
   providers: [UserService],
-  exports: [MongooseModule],
+  exports: [MongooseModule, UserService],
 })
 export class UserModule {}
