@@ -10,6 +10,7 @@ async function bootstrap() {
       'http://localhost:5173',
       'http://localhost:8080',
       'http://localhost:3000',
+      'https://ubiquitous-meringue-177a4c.netlify.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
