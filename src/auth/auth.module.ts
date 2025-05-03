@@ -7,8 +7,8 @@ import { User, UserSchema } from '../schemas/user/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CommonModule } from 'src/common/common.module';
-import { AlertsModule } from 'src/alerts/alerts.module';
+import { CommonModule } from '../common/common.module';
+import { AlertsModule } from '../alerts/alerts.module';
 
 @Module({
   imports: [

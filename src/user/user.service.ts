@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../schemas/user/user.schema';
 import { JwtService } from '@nestjs/jwt';
-import { AlertsService } from 'src/alerts/alerts.service';
+import { AlertsService } from '../alerts/alerts.service';
 
 @Injectable()
 export class UserService {

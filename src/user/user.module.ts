@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { User, UserSchema } from '../schemas/user/user.schema';
-import { AlertsModule } from 'src/alerts/alerts.module';
+import { AlertsModule } from '../alerts/alerts.module';
 
 @Module({
   imports: [
