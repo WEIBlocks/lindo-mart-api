@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { FormsModule } from './forms/forms.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     FormsModule,
     AlertsModule,
     DashboardModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [AppService],

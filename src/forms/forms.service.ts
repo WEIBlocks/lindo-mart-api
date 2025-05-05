@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import { Form } from '../schemas/form/form.schema';
 import { AlertsService } from '../alerts/alerts.service';
 import { User } from '../schemas/user/user.schema';
-import { log } from 'console';
 
 @Injectable()
 export class FormsService {
