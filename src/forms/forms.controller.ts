@@ -43,12 +43,14 @@ export class FormsController {
   async updateFormStatus(
     @Request() req: CustomRequest,
     @Param('formId') formId: string,
-    @Body('status') newStatus: string
+    @Body('status') newStatus: string,
+    @Body('signatureImage') signatureImage?: string
   ) {
     return this.formsService.updateFormStatus(
       req.user,
       formId,
-      newStatus
+      newStatus,
+      signatureImage
     );
   }
 }

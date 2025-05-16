@@ -24,9 +24,15 @@ export class DashboardService {
   async moveForm(
     userId: string,
     formId: string,
-    newRecipient: string
+    newRecipient: string,
+    signatureImage?: string
   ) {
-    return this.formsService.moveForm(userId, formId, newRecipient);
+    return this.formsService.moveForm(
+      userId,
+      formId,
+      newRecipient,
+      signatureImage
+    );
   }
 
   async getMovedForms(userId: string) {
@@ -47,11 +53,12 @@ export class DashboardService {
     }
 
     const message = `Follow-up required for form ${formId}`;
-    await this.alertsService.sendAlert(message,
-      formId, 
+    await this.alertsService.sendAlert(
+      message,
+      formId,
       userId,
-      recipientId, 
-      null,
+      recipientId,
+      null
     );
 
     return { message: 'Follow-up alert sent successfully' };

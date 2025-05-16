@@ -31,11 +31,13 @@ export class DashboardController {
     @Request() req: CustomRequest,
     @Body('formId') formId: string,
     @Body('newRecipient') newRecipient: string,
+    @Body('signatureImage') signatureImage?: string
   ) {
     return this.dashboardService.moveForm(
       req.user.userId,
       formId,
-      newRecipient
+      newRecipient,
+      signatureImage
     );
   }
 

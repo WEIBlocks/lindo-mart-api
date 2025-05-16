@@ -24,6 +24,9 @@ export class Form extends Document {
   @Prop()
   alertId?: string;
 
+  @Prop()
+  signatureUrl?: string;
+
   @Prop({
     type: [
       {

@@ -4,13 +4,15 @@ import { Model } from 'mongoose';
 import { Form } from '../schemas/form/form.schema';
 import { AlertsService } from '../alerts/alerts.service';
 import { User } from '../schemas/user/user.schema';
+import { CloudinaryService } from '../common/cloudinary.service';
 
 @Injectable()
 export class FormsService {
   constructor(
     @InjectModel(Form.name) private formModel: Model<Form>,
     @InjectModel(User.name) private userModel: Model<User>,
-    private alertsService: AlertsService
+    private alertsService: AlertsService,
+    private cloudinaryService: CloudinaryService
   ) {}
 
   async submitForm(userId: string, formData: any, recipient: string) {
@@ -64,8 +66,14 @@ export class FormsService {
     return form;
   }
 
-  async updateFormStatus(user: any, formId: string, newStatus: string) {
+  async updateFormStatus(
+    user: any,
+    formId: string,
+    newStatus: string,
+    signatureImage?: string
+  ) {
     const userId = user.userId;
+    console.log(`Attempting to update form status for form ID: ${formId}, user ID: ${userId}, new status: ${newStatus}, signatureImage: ${signatureImage ? 'provided' : 'not provided'}`);
     // Find form where recipient is either the user's ID or their role
     const form = await this.formModel
       .findOne({
@@ -75,7 +83,23 @@ export class FormsService {
       .exec();
 
     if (!form) {
+      console.error(`Form with ID ${formId} not found for user ID: ${userId}`);
       throw new NotFoundException('Form not found');
+    }
+
+    // If signature image is provided, upload it to Cloudinary
+    if (signatureImage) {
+      try {
+        const signatureUrl = await this.cloudinaryService.uploadSignature(
+          signatureImage,
+          userId
+        );
+        form.signatureUrl = signatureUrl;
+        console.log(`Signature uploaded successfully for user ID: ${userId}`);
+      } catch (error) {
+        console.error(`Error uploading signature for user ID: ${userId}:`, error);
+        // Continue form update even if signature upload fails
+      }
     }
 
     // Update form status
@@ -88,21 +112,23 @@ export class FormsService {
       toUserId: null,
     });
     await form.save();
+    console.log(`Form status updated successfully for form ID: ${formId}, new status: ${newStatus}`);
 
     // Extract unique user IDs from form.history
-    const userIds = Array.from(
-      new Set(
-        form.history.flatMap((entry) => [entry.fromUserId, entry.toUserId])
-      )
-    ).filter((id) => id); // Filter out any undefined or null values
+    // const userIds = Array.from(
+    //   new Set(
+    //     form.history.flatMap((entry) => [entry.fromUserId, entry.toUserId])
+    //   )
+    // ).filter((id) => id); // Filter out any undefined or null values
 
-    await this.alertsService.sendAlert(
-      `Form ${form._id} status has been updated to ${newStatus}`,
-      form._id.toString(),
-      userId,
-      null,
-      userIds
-    );
+    // await this.alertsService.sendAlert(
+    //   `Form ${form._id} status has been updated to ${newStatus}`,
+    //   form._id.toString(),
+    //   userId,
+    //   null,
+    //   userIds
+    // );
+    // console.log(`Alert sent successfully for form ID: ${form._id}, new status: ${newStatus}`);
 
     return { message: 'Form status updated successfully' };
   }
@@ -128,10 +154,29 @@ export class FormsService {
       .exec();
   }
 
-  async moveForm(userId: string, formId: string, newRecipient: string) {
+  async moveForm(
+    userId: string,
+    formId: string,
+    newRecipient: string,
+    signatureImage?: string
+  ) {
     const form = await this.formModel.findById(formId).exec();
     if (!form) {
       throw new NotFoundException('Form not found');
+    }
+
+    // If signature image is provided, upload it to Cloudinary
+    if (signatureImage) {
+      try {
+        const signatureUrl = await this.cloudinaryService.uploadSignature(
+          signatureImage,
+          userId
+        );
+        form.signatureUrl = signatureUrl;
+      } catch (error) {
+        console.error('Error uploading signature:', error);
+        // Continue form moving even if signature upload fails
+      }
     }
 
     // Update form status and recipient
