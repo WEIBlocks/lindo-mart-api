@@ -4,8 +4,8 @@ import { Model } from 'mongoose';
 import { Alert } from '../schemas/alert/alert.schema';
 import { User } from '../schemas/user/user.schema';
 import { Form } from '../schemas/form/form.schema';
+import { ResendService } from '../common/resend.service';
 import { TwilioService } from '../common/twilio.service';
-import { SendGridService } from '../common/sendgrid.service';
 import { AlertsGateway } from './alerts.gateway';
 
 @Injectable()
@@ -14,8 +14,8 @@ export class AlertsService {
     @InjectModel(Alert.name) private alertModel: Model<Alert>,
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Form.name) private formModel: Model<Form>,
+    private resendService: ResendService,
     private twilioService: TwilioService,
-    private sendGridService: SendGridService,
     private alertsGateway: AlertsGateway
   ) {}
 
@@ -50,25 +50,108 @@ export class AlertsService {
           message
         );
       }
-      // else {
-      //   await this.alertsGateway.sendNotificationByRole(role, message);
+
+      console.log('user.email', user.email);
+
+      // SMS notification using Twilio (uncomment when needed)
+      // if (user.phoneNumber && this.twilioService.isValidPhoneNumber(user.phoneNumber)) {
+      //   try {
+      //     const formattedPhone = this.twilioService.formatPhoneNumber(user.phoneNumber);
+      //     await this.twilioService.sendSMS(formattedPhone, message);
+      //     categories.push('sms');
+      //     console.log(`SMS sent successfully to ${user.phoneNumber}`);
+      //   } catch (smsError) {
+      //     console.error('Failed to send SMS notification:', smsError);
+      //     // Continue execution even if SMS fails
+      //   }
       // }
 
-      // SMS
-      // if (user.phoneNumber) {
-      //   await this.twilioService.sendSMS(user.phoneNumber, message);
-      //   categories.push('sms');
-      // }
+      // Email notification using Resend
+      if (user.email) {
+        try {
+          // Get form details for better email context
+          let formDetails = null;
+          try {
+            formDetails = await this.formModel.findById(relatedId).exec();
+          } catch (error) {
+            // If form not found, create basic details
+            formDetails = {
+              _id: relatedId,
+              formId: relatedId,
+              formType: 'General',
+              status: 'Pending',
+              createdAt: new Date(),
+            };
+          }
 
-      // Email
-      // if (user.email) {
-      //   await this.sendGridService.sendEmail(
-      //     user.email,
-      //     '🔔 New Alert Notification',
-      //     `<p>${message}</p>`
-      //   );
-      //   categories.push('email');
-      // }
+          // Determine email type based on message content
+          if (message.toLowerCase().includes('new form received')) {
+            await this.resendService.sendFormReceivedEmail(user.email, {
+              formId: formDetails?._id || relatedId,
+              formType: formDetails?.formType || 'General',
+              status: formDetails?.status || 'Pending',
+              createdAt: formDetails?.createdAt || new Date(),
+            });
+          } else if (message.toLowerCase().includes('status updated')) {
+            const statusMatch = message.match(/status updated to (\w+)/i);
+            const newStatus = statusMatch ? statusMatch[1] : 'Updated';
+            await this.resendService.sendFormStatusUpdateEmail(
+              user.email,
+              {
+                formId: formDetails?._id || relatedId,
+                formType: formDetails?.formType || 'General',
+                status: formDetails?.status || 'Pending',
+                createdAt: formDetails?.createdAt || new Date(),
+              },
+              newStatus
+            );
+          } else if (
+            message.toLowerCase().includes('form moved') ||
+            message.toLowerCase().includes('form transferred')
+          ) {
+            await this.resendService.sendFormMovedEmail(
+              user.email,
+              {
+                formId: formDetails?._id || relatedId,
+                formType: formDetails?.formType || 'General',
+                status: formDetails?.status || 'Pending',
+                createdAt: formDetails?.createdAt || new Date(),
+              },
+              'System Administrator'
+            );
+          } else if (message.toLowerCase().includes('follow-up')) {
+            await this.resendService.sendFollowUpEmail(user.email, {
+              formId: formDetails?._id || relatedId,
+              formType: formDetails?.formType || 'General',
+              status: formDetails?.status || 'Pending',
+              createdAt: formDetails?.createdAt || new Date(),
+            });
+          } else if (
+            message.toLowerCase().includes('role') &&
+            message.toLowerCase().includes('updated')
+          ) {
+            const roleMatch = message.match(/role has been updated to (\w+)/i);
+            const newRole = roleMatch ? roleMatch[1] : 'Staff';
+            await this.resendService.sendRoleUpdateEmail(
+              user.email,
+              user.username,
+              newRole
+            );
+          } else {
+            // Generic email for other types of notifications
+            await this.resendService.sendEmail(
+              user.email,
+              '🔔 New Alert Notification',
+              `<p style="font-family: Arial, sans-serif; color: #374151; line-height: 1.6;">${message}</p>`
+            );
+          }
+
+          categories.push('email');
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+          // Continue execution even if email fails
+        }
+      }
 
       // Store alert with categories
       const alert = await this.alertModel.create({

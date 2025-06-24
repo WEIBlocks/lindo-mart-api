@@ -9,8 +9,6 @@ import { AlertsController } from './alerts.controller';
 import { Form, FormSchema } from '../schemas/form/form.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { AlertsGateway } from './alerts.gateway';
-import { TwilioService } from '../common/twilio.service';
-import { SendGridService } from '../common/sendgrid.service';
 
 @Module({
   imports: [
@@ -26,7 +24,7 @@ import { SendGridService } from '../common/sendgrid.service';
       }),
     }),
   ],
-  providers: [AlertsService, AlertsGateway, TwilioService, SendGridService],
+  providers: [AlertsService, AlertsGateway],
   exports: [AlertsService],
   controllers: [AlertsController],
 })

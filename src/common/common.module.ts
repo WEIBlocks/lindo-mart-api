@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ResendService } from './resend.service';
 import { TwilioService } from './twilio.service';
-import { SendGridService } from './sendgrid.service';
 import { CloudinaryService } from './cloudinary.service';
 
 @Module({
   imports: [ConfigModule],
-  providers: [TwilioService, SendGridService, CloudinaryService],
-  exports: [TwilioService, SendGridService, CloudinaryService],
+  providers: [ResendService, TwilioService, CloudinaryService],
+  exports: [ResendService, TwilioService, CloudinaryService],
 })
 export class CommonModule {}
