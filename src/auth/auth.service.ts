@@ -67,6 +67,7 @@ export class AuthService {
   }
 
   async register(userDto: any) {
+    console.log("Kuch to aiii");
     const existingUser = await this.userModel
       .findOne({ username: userDto.username })
       .exec();

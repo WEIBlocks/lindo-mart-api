@@ -10,11 +10,33 @@ import { AlertsModule } from './alerts/alerts.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ContactModule } from './contact/contact.module';
 import { ItemsModule } from './items/items.module';
+import { Logger } from '@nestjs/common';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.MONGODB_URI),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_URI, {
+      connectionFactory: (connection) => {
+        const logger = new Logger('MongoDB');
+
+        connection.on('connected', () => {
+          logger.log('✅ MongoDB Connected successfully');
+        });
+
+        connection.on('error', (err) => {
+          logger.error('❌ MongoDB Connection error:', err);
+        });
+
+        connection.on('disconnected', () => {
+          logger.warn('⚠️ MongoDB Disconnected');
+        });
+
+        return connection;
+      },
+    }),
     AuthModule,
     UserModule,
     FormsModule,

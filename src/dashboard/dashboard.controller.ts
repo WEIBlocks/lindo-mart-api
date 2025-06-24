@@ -15,6 +15,12 @@ import { DashboardService } from './dashboard.service';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
+  @Get('admin-stats')
+  // TODO: Add Super-Admin Guard
+  async getAdminDashboardStats() {
+    return this.dashboardService.getAdminDashboardStats();
+  }
+
   @Get('forms')
   // TODO: Add Super-Admin Guard
   async getAllForms() {

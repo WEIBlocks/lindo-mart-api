@@ -16,6 +16,6 @@ import { CommonModule } from '../common/common.module';
   ],
   controllers: [FormsController],
   providers: [FormsService],
-  exports: [FormsService],
+  exports: [FormsService, MongooseModule],
 })
 export class FormsModule {}
