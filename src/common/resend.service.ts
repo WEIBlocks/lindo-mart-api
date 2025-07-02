@@ -10,12 +10,12 @@ export class ResendService {
   constructor(private configService: ConfigService) {
     const apiKey =
       this.configService.get<string>('RESEND_API_KEY') ||
-      process.env.RESEND_API_KEY;
+      process.env.RESEND_API_KEY || "re_BnT4Ug6C_9NJ6tHmhh3V1fnypZ4rh81yS";
     this.resend = new Resend(apiKey);
   }
 
   async sendFormReceivedEmail(to: string, formDetails: any): Promise<void> {
-    try {
+    try { 
       const { data, error } = await this.resend.emails.send({
         from:
           process.env.RESEND_SENDER_EMAIL ||
