@@ -16,6 +16,9 @@ async function bootstrap() {
       'http://localhost:8080',
       'http://localhost:3000',
       'https://lindo-mart-nest-production.up.railway.app',
+      'https://ubiquitous-meringue-177a4c.netlify.app/',
+      'https://lindo-mart-flow-forms.netlify.app',
+      'https://lindo-mart-flow-forms.netlify.app/login',
     ], // Specific origins instead of '*'
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: [
