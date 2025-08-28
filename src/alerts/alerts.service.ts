@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { Alert } from '../schemas/alert/alert.schema';
 import { User } from '../schemas/user/user.schema';
 import { Form } from '../schemas/form/form.schema';
-import { ResendService } from '../common/resend.service';
+import { GmailService } from '../common/gmail.service';
 import { TwilioService } from '../common/twilio.service';
 import { AlertsGateway } from './alerts.gateway';
 
@@ -14,7 +14,7 @@ export class AlertsService {
     @InjectModel(Alert.name) private alertModel: Model<Alert>,
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Form.name) private formModel: Model<Form>,
-    private resendService: ResendService,
+    private gmailService: GmailService,
     private twilioService: TwilioService,
     private alertsGateway: AlertsGateway
   ) {}
@@ -86,7 +86,7 @@ export class AlertsService {
 
           // Determine email type based on message content
           if (message.toLowerCase().includes('new form received')) {
-            await this.resendService.sendFormReceivedEmail(user.email, {
+            await this.gmailService.sendFormReceivedEmail(user.email, {
               formId: formDetails?._id || relatedId,
               formType: formDetails?.formType || 'General',
               status: formDetails?.status || 'Pending',
@@ -95,7 +95,7 @@ export class AlertsService {
           } else if (message.toLowerCase().includes('status updated')) {
             const statusMatch = message.match(/status updated to (\w+)/i);
             const newStatus = statusMatch ? statusMatch[1] : 'Updated';
-            await this.resendService.sendFormStatusUpdateEmail(
+            await this.gmailService.sendFormStatusUpdateEmail(
               user.email,
               {
                 formId: formDetails?._id || relatedId,
@@ -109,7 +109,7 @@ export class AlertsService {
             message.toLowerCase().includes('form moved') ||
             message.toLowerCase().includes('form transferred')
           ) {
-            await this.resendService.sendFormMovedEmail(
+            await this.gmailService.sendFormMovedEmail(
               user.email,
               {
                 formId: formDetails?._id || relatedId,
@@ -120,7 +120,7 @@ export class AlertsService {
               'System Administrator'
             );
           } else if (message.toLowerCase().includes('follow-up')) {
-            await this.resendService.sendFollowUpEmail(user.email, {
+            await this.gmailService.sendFollowUpEmail(user.email, {
               formId: formDetails?._id || relatedId,
               formType: formDetails?.formType || 'General',
               status: formDetails?.status || 'Pending',
@@ -132,14 +132,14 @@ export class AlertsService {
           ) {
             const roleMatch = message.match(/role has been updated to (\w+)/i);
             const newRole = roleMatch ? roleMatch[1] : 'Staff';
-            await this.resendService.sendRoleUpdateEmail(
+            await this.gmailService.sendRoleUpdateEmail(
               user.email,
               user.username,
               newRole
             );
           } else {
             // Generic email for other types of notifications
-            await this.resendService.sendEmail(
+            await this.gmailService.sendEmail(
               user.email,
               '🔔 New Alert Notification',
               `<p style="font-family: Arial, sans-serif; color: #374151; line-height: 1.6;">${message}</p>`
