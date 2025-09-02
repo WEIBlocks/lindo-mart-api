@@ -8,6 +8,11 @@ export class GmailService {
   private readonly logger = new Logger(GmailService.name);
   private transporter: Transporter;
   private readonly defaultSender: string;
+  private host: string;
+  private port: number;
+  private secure: boolean;
+  private enableDebug: boolean;
+  private timeoutMs: number;
 
   constructor(private readonly configService: ConfigService) {
     const host =
@@ -50,6 +55,16 @@ export class GmailService {
         process.env.SMTP_DEBUG ||
         'false'
       ).toLowerCase() === 'true';
+    const timeoutStr =
+      this.configService.get<string>('SMTP_TIMEOUT_MS') ||
+      process.env.SMTP_TIMEOUT_MS ||
+      '20000';
+    this.timeoutMs = Number.parseInt(timeoutStr, 10) || 20000;
+
+    this.host = host;
+    this.port = port;
+    this.secure = secure;
+    this.enableDebug = enableDebug;
 
     this.transporter = nodemailer.createTransport({
       host,
@@ -58,7 +73,12 @@ export class GmailService {
       auth: user && pass ? { user, pass } : undefined,
       logger: enableDebug,
       debug: enableDebug,
-    });
+      connectionTimeout: this.timeoutMs,
+      greetingTimeout: this.timeoutMs,
+      socketTimeout: this.timeoutMs,
+      requireTLS: !secure,
+      tls: { servername: host },
+    } as any);
 
     // Verify transporter on startup to log connectivity/auth issues early
     this.transporter
@@ -125,6 +145,9 @@ export class GmailService {
 
   async sendEmail(to: string, subject: string, html: string): Promise<void> {
     try {
+      this.logger.log(
+        `Attempting SMTP send (host=${this.host}, port=${this.port}, secure=${this.secure}) to ${to}`
+      );
       const info = await this.transporter.sendMail({
         from: this.defaultSender,
         to,
@@ -134,6 +157,50 @@ export class GmailService {
       this.logger.log(`Email sent to ${to}. MessageId: ${info.messageId}`);
     } catch (error) {
       this.logger.error('Error sending email via Gmail SMTP:', error);
+      // Fallback: retry via STARTTLS 587 if primary secure:465 fails to connect
+      if (
+        (error?.code === 'ETIMEDOUT' || error?.command === 'CONN') &&
+        this.secure &&
+        this.port === 465
+      ) {
+        try {
+          const user =
+            this.configService.get<string>('GMAIL_SMTP_USER') ||
+            process.env.GMAIL_SMTP_USER;
+          const pass =
+            this.configService.get<string>('GMAIL_SMTP_PASS') ||
+            process.env.GMAIL_SMTP_PASS;
+          const altPort = 587;
+          this.logger.warn(
+            `Primary SMTP connection timed out. Retrying via host=${this.host}, port=${altPort}, secure=false ...`
+          );
+          const altTransporter = nodemailer.createTransport({
+            host: this.host,
+            port: altPort,
+            secure: false,
+            auth: user && pass ? { user, pass } : undefined,
+            logger: this.enableDebug,
+            debug: this.enableDebug,
+            connectionTimeout: this.timeoutMs,
+            greetingTimeout: this.timeoutMs,
+            socketTimeout: this.timeoutMs,
+            requireTLS: true,
+            tls: { servername: this.host },
+          } as any);
+          const info2 = await altTransporter.sendMail({
+            from: this.defaultSender,
+            to,
+            subject,
+            html,
+          });
+          this.logger.log(
+            `Email sent (fallback STARTTLS) to ${to}. MessageId: ${info2.messageId}`
+          );
+          return;
+        } catch (fallbackErr) {
+          this.logger.error('Fallback SMTP send failed:', fallbackErr);
+        }
+      }
       throw error;
     }
   }
