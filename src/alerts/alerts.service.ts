@@ -205,9 +205,9 @@ export class AlertsService {
       // Send notification about status update
       await this.sendAlert(
         `Form ${form._id} status updated to ${status}`,
-        'Staff',
         form._id.toString(),
-        form.userId
+        userId,
+        'Staff'
       );
     }
 

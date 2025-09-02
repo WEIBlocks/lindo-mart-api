@@ -44,12 +44,31 @@ export class GmailService {
     const port = Number.parseInt(portStr as string, 10) || 465;
     const secure = String(secureEnv).toLowerCase() === 'true' || port === 465;
 
+    const enableDebug =
+      (
+        this.configService.get<string>('SMTP_DEBUG') ||
+        process.env.SMTP_DEBUG ||
+        'false'
+      ).toLowerCase() === 'true';
+
     this.transporter = nodemailer.createTransport({
       host,
       port,
       secure,
       auth: user && pass ? { user, pass } : undefined,
+      logger: enableDebug,
+      debug: enableDebug,
     });
+
+    // Verify transporter on startup to log connectivity/auth issues early
+    this.transporter
+      .verify()
+      .then(() =>
+        this.logger.log(
+          `SMTP connection verified (host=${host}, port=${port}, secure=${secure}).`
+        )
+      )
+      .catch((err) => this.logger.error('SMTP verification failed:', err));
   }
 
   async sendFormReceivedEmail(to: string, formDetails: any): Promise<void> {
