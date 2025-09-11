@@ -10,20 +10,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS with proper configuration for credentialed requests
+  // Enable CORS to allow all origins
   app.enableCors({
-    origin: [
-      'http://localhost:8080',
-      'http://localhost:3000',
-      'https://lindo-mart-nest-production.up.railway.app',
-      'https://celebrated-froyo-33da59.netlify.app/',
-      'https://celebrated-froyo-33da59.netlify.app',
-      'https://lindo-mart.vercel.app', // new link added"
-      "https://lindo-mart-frontend.vercel.app", // new link added 
-      
-
-
-    ], // Specific origins instead of '*'
+    origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: [
       'Content-Type',
@@ -32,7 +21,7 @@ async function bootstrap() {
       'Origin',
       'X-Requested-With',
     ],
-    credentials: true, // Enable credentials
+    credentials: false, // Must be false when origin is '*'
     optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
   });
 
