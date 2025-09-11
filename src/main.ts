@@ -18,8 +18,8 @@ async function bootstrap() {
       'https://lindo-mart-nest-production.up.railway.app',
       'https://celebrated-froyo-33da59.netlify.app/',
       'https://celebrated-froyo-33da59.netlify.app',
-      'https://lindo-mart.vercel.app/',
-      "https://lindo-mart-frontend.vercel.app/",
+      'https://lindo-mart.vercel.app/', // new link added"
+      "https://lindo-mart-frontend.vercel.app/", // new link added 
       
 
 
