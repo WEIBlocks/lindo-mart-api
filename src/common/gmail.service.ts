@@ -8,7 +8,7 @@ export class GmailService {
   private readonly logger = new Logger(GmailService.name);
   private transporter: Transporter;
   private readonly defaultSender: string;
-
+//  smtp credentials
   constructor(private readonly configService: ConfigService) {
     const host = this.configService.get<string>('GMAIL_SMTP_HOST') || 'smtp.gmail.com';
     const portStr = this.configService.get<string>('GMAIL_SMTP_PORT') || '465';
