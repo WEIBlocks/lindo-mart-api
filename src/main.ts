@@ -14,15 +14,7 @@ async function bootstrap() {
   app.enableCors({
     origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'Accept',
-      'Origin',
-      'X-Requested-With',
-    ],
-    credentials: false, // Must be false when origin is '*'
-    optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+   
   });
 
   const port = process.env.PORT || 5000;
