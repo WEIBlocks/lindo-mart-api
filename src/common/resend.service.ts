@@ -8,13 +8,23 @@ export class ResendService {
   private readonly logger = new Logger(ResendService.name);
 
   constructor(private configService: ConfigService) {
-    const apiKey =
-      this.configService.get<string>('RESEND_API_KEY') ||
-      process.env.RESEND_API_KEY || "re_BnT4Ug6C_9NJ6tHmhh3V1fnypZ4rh81yS";
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    
+    if (!apiKey) {
+      this.logger.warn('Resend API key not configured - email functionality will be disabled');
+      this.resend = null;
+      return;
+    }
+    
     this.resend = new Resend(apiKey);
   }
 
   async sendFormReceivedEmail(to: string, formDetails: any): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn(`Form received email not sent to ${to} - Resend not configured`);
+      return;
+    }
+
     try { 
       const { data, error } = await this.resend.emails.send({
         from:
@@ -42,6 +52,11 @@ export class ResendService {
     formDetails: any,
     newStatus: string
   ): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn(`Status update email not sent to ${to} - Resend not configured`);
+      return;
+    }
+
     try {
       const { data, error } = await this.resend.emails.send({
         from:
@@ -69,6 +84,11 @@ export class ResendService {
     username: string,
     newRole: string
   ): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn(`Role update email not sent to ${to} - Resend not configured`);
+      return;
+    }
+
     try {
       const { data, error } = await this.resend.emails.send({
         from:
@@ -96,6 +116,11 @@ export class ResendService {
     formDetails: any,
     movedBy: string
   ): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn(`Form moved email not sent to ${to} - Resend not configured`);
+      return;
+    }
+
     try {
       const { data, error } = await this.resend.emails.send({
         from:
@@ -119,6 +144,11 @@ export class ResendService {
   }
 
   async sendFollowUpEmail(to: string, formDetails: any): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn(`Follow-up email not sent to ${to} - Resend not configured`);
+      return;
+    }
+
     try {
       const { data, error } = await this.resend.emails.send({
         from:
@@ -143,6 +173,11 @@ export class ResendService {
 
   // Generic email method for custom messages
   async sendEmail(to: string, subject: string, html: string): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn(`Email not sent to ${to} - Resend not configured`);
+      return;
+    }
+
     try {
       const { data, error } = await this.resend.emails.send({
         from:

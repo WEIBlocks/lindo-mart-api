@@ -15,38 +15,18 @@ export class GmailService {
   private timeoutMs: number;
 
   constructor(private readonly configService: ConfigService) {
-    const host =
-      this.configService.get<string>('GMAIL_SMTP_HOST') ||
-      process.env.GMAIL_SMTP_HOST ||
-      'smtp.gmail.com';
-    const portStr =
-      this.configService.get<string>('GMAIL_SMTP_PORT') ||
-      process.env.GMAIL_SMTP_PORT ||
-      '465';
-    const secureEnv =
-      this.configService.get<string>('GMAIL_SMTP_SECURE') ||
-      process.env.GMAIL_SMTP_SECURE ||
-      'true';
+    const host = this.configService.get<string>('GMAIL_SMTP_HOST') || 'smtp.gmail.com';
+    const portStr = this.configService.get<string>('GMAIL_SMTP_PORT') || '465';
+    const secureEnv = this.configService.get<string>('GMAIL_SMTP_SECURE') || 'true';
 
-    const user =
-      this.configService.get<string>('GMAIL_SMTP_USER') ||
-      process.env.GMAIL_SMTP_USER;
-    const pass =
-      this.configService.get<string>('GMAIL_SMTP_PASS') ||
-      process.env.GMAIL_SMTP_PASS;
+    const user = this.configService.get<string>('GMAIL_SMTP_USER');
+    const pass = this.configService.get<string>('GMAIL_SMTP_PASS');
 
-    const senderName =
-      this.configService.get<string>('GMAIL_SENDER_NAME') ||
-      process.env.GMAIL_SENDER_NAME ||
-      'Lindo Mart';
-    const senderEmail =
-      this.configService.get<string>('GMAIL_SENDER_EMAIL') ||
-      process.env.GMAIL_SENDER_EMAIL ||
-      user ||
-      '';
+    const senderName = this.configService.get<string>('GMAIL_SENDER_NAME') || 'Lindo Mart';
+    const senderEmail = this.configService.get<string>('GMAIL_SENDER_EMAIL') || user || 'noreply@lindomart.com';
     this.defaultSender = `${senderName} <${senderEmail}>`;
 
-    const port = Number.parseInt(portStr as string, 10) || 465;
+    const port = Number.parseInt(portStr, 10) || 465;
     const secure = String(secureEnv).toLowerCase() === 'true' || port === 465;
 
     const enableDebug =
@@ -70,7 +50,7 @@ export class GmailService {
       host,
       port,
       secure,
-      auth: user && pass ? { user, pass } : undefined,
+      auth: { user, pass },
       logger: enableDebug,
       debug: enableDebug,
       connectionTimeout: this.timeoutMs,
@@ -143,7 +123,24 @@ export class GmailService {
     );
   }
 
+  private async verifyConnection(): Promise<void> {
+    if (!this.transporter) return;
+    
+    try {
+      await this.transporter.verify();
+      this.logger.log('Gmail SMTP connection verified successfully');
+    } catch (error) {
+      this.logger.error('Gmail SMTP verification failed:', error);
+      // Don't throw error to prevent startup failure
+    }
+  }
+
   async sendEmail(to: string, subject: string, html: string): Promise<void> {
+    if (!this.transporter) {
+      this.logger.warn(`Email not sent to ${to} - Gmail SMTP not configured`);
+      return;
+    }
+
     try {
       this.logger.log(
         `Attempting SMTP send (host=${this.host}, port=${this.port}, secure=${this.secure}) to ${to}`
