@@ -10,7 +10,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CustomRequest } from '../types/custom-request.interface';
 import { DashboardService } from './dashboard.service';
 
-@Controller('dashboard')
+@Controller('/dashboard')
 @UseGuards(JwtAuthGuard)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}

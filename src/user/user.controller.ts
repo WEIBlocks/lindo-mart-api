@@ -14,7 +14,7 @@ import { CustomRequest } from '../types/custom-request.interface';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-@Controller('users')
+@Controller('/users')
 @UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}

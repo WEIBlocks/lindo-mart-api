@@ -1,0 +1,94 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  HttpStatus,
+  HttpCode,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { CategoryService } from './category.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+
+@Controller('itemlist/common/categories')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('Super-Admin', 'Admin')
+export class CategoryController {
+  constructor(private readonly categoryService: CategoryService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoryService.create(createCategoryDto).then(() => ({
+      success: true,
+      message: 'Category created successfully'
+    }));
+  }
+
+  @Get()
+  findAll(
+    @Query('type') type?: string,
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10
+  ) {
+    return this.categoryService.findAll(type, page, limit).then(result => ({
+      success: true,
+      message: 'Categories retrieved successfully',
+      data: result
+    }));
+  }
+
+  @Get('options')
+  getOptions(@Query('type') type: string) {
+    return this.categoryService.getCategoryOptions(type).then(options => ({
+      success: true,
+      message: 'Category options retrieved successfully',
+      data: options
+    }));
+  }
+
+  @Get('public')
+  @UseGuards(JwtAuthGuard) // Only authentication, no role guard
+  getPublicCategories(@Query('type') type?: string) {
+    return this.categoryService.getPublicCategories(type).then(categories => ({
+      success: true,
+      message: 'Categories retrieved successfully',
+      data: categories
+    }));
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.categoryService.findOne(id).then(category => ({
+      success: true,
+      message: 'Category retrieved successfully',
+      data: category
+    }));
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+    return this.categoryService.update(id, updateCategoryDto).then(() => ({
+      success: true,
+      message: 'Category updated successfully'
+    }));
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.categoryService.remove(id).then(() => ({
+      success: true,
+      message: 'Category deleted successfully'
+    }));
+  }
+
+}

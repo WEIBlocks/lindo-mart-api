@@ -10,6 +10,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
+  // Set global API prefix
+  app.setGlobalPrefix('api/v1');
+
   // Enable CORS to allow all origins
   app.enableCors({
     origin: '*', // Allow all origins
@@ -21,7 +24,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  logger.log(`🚀 Application is running on: http://localhost:${port}`);
+  logger.log(`🚀 Application is running on: http://localhost:${port}/api/v1`);
   logger.log(
     `📊 MongoDB URI: ${process.env.MONGODB_URI ? 'Connected' : 'Not configured'}`
   );

@@ -13,7 +13,7 @@ import { CustomRequest } from '../types/custom-request.interface';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 
-@Controller('alerts')
+@Controller('/alerts')
 @UseGuards(JwtAuthGuard)
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}

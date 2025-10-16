@@ -12,7 +12,7 @@ import { FormsService } from './forms.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CustomRequest } from '../types/custom-request.interface';
 
-@Controller('forms')
+@Controller('/forms')
 @UseGuards(JwtAuthGuard)
 export class FormsController {
   constructor(private readonly formsService: FormsService) {}

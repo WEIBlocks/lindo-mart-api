@@ -19,7 +19,7 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 
-@Controller('inventory')
+@Controller('itemlist/inventory/items')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('Super-Admin', 'Admin')
 export class InventoryController {
@@ -132,23 +132,6 @@ export class InventoryController {
     }));
   }
 
-  @Get('options/unit-of-measure')
-  getUnitOfMeasureOptions() {
-    return this.inventoryService.getUnitOfMeasureOptions().then(options => ({
-      success: true,
-      message: 'Unit of measure options retrieved successfully',
-      data: options
-    }));
-  }
-
-  @Get('options/units-per-package')
-  getUnitsPerPackageOptions() {
-    return this.inventoryService.getUnitsPerPackageOptions().then(options => ({
-      success: true,
-      message: 'Units per package options retrieved successfully',
-      data: options
-    }));
-  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

@@ -145,30 +145,13 @@ export class InventoryService {
     const total = await this.inventoryModel.countDocuments();
     const perishable = await this.inventoryModel.countDocuments({ perishable: true });
     const essential = await this.inventoryModel.countDocuments({ essential: true });
-    const active = await this.inventoryModel.countDocuments({ status: 'active' });
     
     return {
       total,
       perishable,
-      essential,
-      active,
-      inactive: total - active
+      essential
     };
   }
 
-  async getUnitOfMeasureOptions(): Promise<string[]> {
-    return [
-      'Pieces', 'Boxes', 'Cartons', 'Bags', 'Bottles', 'Cans', 
-      'Packets', 'Rolls', 'Sheets', 'Units', 'Kilograms', 
-      'Grams', 'Liters', 'Meters'
-    ];
-  }
 
-  async getUnitsPerPackageOptions(): Promise<string[]> {
-    return [
-      '1', '2', '3', '4', '5', '6', '8', '10', '12', '15', '20', '24', 
-      '25', '30', '36', '48', '50', '60', '72', '100', '120', '144', 
-      '200', '250', '300', '500', '1000'
-    ];
-  }
 }

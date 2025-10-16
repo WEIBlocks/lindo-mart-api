@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { CustomRequest } from '../types/custom-request.interface';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@Controller('auth')
+@Controller('/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

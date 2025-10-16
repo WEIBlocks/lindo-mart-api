@@ -12,6 +12,7 @@ import { ContactModule } from './contact/contact.module';
 import { ItemsModule } from './items/items.module';
 import { InventoryModule } from './itemlist/inventory/inventory.module';
 import { EquipmentModule } from './itemlist/equipment/equipment.module';
+import { ItemListCommonModule } from './itemlist/common/common.module';
 import { Logger } from '@nestjs/common';
 
 @Module({
@@ -48,6 +49,7 @@ import { Logger } from '@nestjs/common';
     ItemsModule,
     InventoryModule,
     EquipmentModule,
+    ItemListCommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

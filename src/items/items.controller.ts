@@ -25,7 +25,7 @@ interface User {
   email?: string;
 }
 
-@Controller('items')
+@Controller('/items')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}

@@ -2,7 +2,9 @@ import {
   IsString, 
   IsBoolean, 
   IsOptional, 
-  IsEnum, 
+  IsNumber,
+  IsMongoId,
+  Min,
   Length
 } from 'class-validator';
 
@@ -18,20 +20,14 @@ export class UpdateInventoryDto {
   description?: string;
 
   @IsOptional()
-  @IsEnum([
-    'Pieces', 'Boxes', 'Cartons', 'Bags', 'Bottles', 'Cans', 
-    'Packets', 'Rolls', 'Sheets', 'Units', 'Kilograms', 
-    'Grams', 'Liters', 'Meters'
-  ], { message: 'Invalid unit of measure' })
+  @IsString()
+  @Length(1, 50)
   unitOfMeasure?: string;
 
   @IsOptional()
-  @IsEnum([
-    '1', '2', '3', '4', '5', '6', '8', '10', '12', '15', '20', '24', 
-    '25', '30', '36', '48', '50', '60', '72', '100', '120', '144', 
-    '200', '250', '300', '500', '1000'
-  ], { message: 'Invalid units per package' })
-  unitsPerPackage?: string;
+  @IsNumber()
+  @Min(0)
+  unitsPerPackage?: number;
 
   @IsOptional()
   @IsString()
@@ -45,4 +41,14 @@ export class UpdateInventoryDto {
   @IsOptional()
   @IsBoolean()
   essential?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 50)
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 50)
+  subcategory?: string;
 }
