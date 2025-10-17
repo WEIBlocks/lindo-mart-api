@@ -9,26 +9,10 @@ export class EquipmentItem extends Document {
   @Prop({ required: true })
   description: string;
 
-  @Prop({ 
-    required: true,
-    enum: [
-      'Equipment Alert',
-      'Facility Alert'
-    ]
-  })
+  @Prop({ required: true })
   category: string;
 
-  @Prop({ 
-    required: true,
-    enum: [
-      'Freezer/Chiller',
-      'Scales', 
-      'Other',
-      'Restrooms',
-      'Electricals',
-      'Flooding'
-    ]
-  })
+  @Prop({ required: true })
   subcategory: string;
 
   @Prop({ required: true })

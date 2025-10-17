@@ -131,31 +131,28 @@ export class EquipmentService {
 
   async getEquipmentStats(): Promise<any> {
     const total = await this.equipmentModel.countDocuments();
-    const equipmentAlert = await this.equipmentModel.countDocuments({ category: 'Equipment Alert' });
-    const facilityAlert = await this.equipmentModel.countDocuments({ category: 'Facility Alert' });
+    
+    // Get unique categories and their counts
+    const categoryStats = await this.equipmentModel.aggregate([
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
     
     return {
       total,
-      equipmentAlert,
-      facilityAlert
+      categoryStats
     };
   }
 
   async getCategoryOptions(): Promise<string[]> {
-    return [
-      'Equipment Alert',
-      'Facility Alert'
-    ];
+    // Get unique categories from the database
+    const categories = await this.equipmentModel.distinct('category');
+    return categories.sort();
   }
 
   async getSubcategoryOptions(): Promise<string[]> {
-    return [
-      'Freezer/Chiller',
-      'Scales', 
-      'Other',
-      'Restrooms',
-      'Electricals',
-      'Flooding'
-    ];
+    // Get unique subcategories from the database
+    const subcategories = await this.equipmentModel.distinct('subcategory');
+    return subcategories.sort();
   }
 }

@@ -1,7 +1,6 @@
 import { 
   IsString, 
   IsOptional, 
-  IsEnum, 
   Length
 } from 'class-validator';
 
@@ -14,20 +13,12 @@ export class CreateEquipmentDto {
   @Length(1, 500)
   description: string;
 
-  @IsEnum([
-    'Equipment Alert',
-    'Facility Alert'
-  ], { message: 'Invalid category' })
+  @IsString()
+  @Length(1, 50)
   category: string;
 
-  @IsEnum([
-    'Freezer/Chiller',
-    'Scales', 
-    'Other',
-    'Restrooms',
-    'Electricals',
-    'Flooding'
-  ], { message: 'Invalid subcategory' })
+  @IsString()
+  @Length(1, 50)
   subcategory: string;
 
   @IsString()

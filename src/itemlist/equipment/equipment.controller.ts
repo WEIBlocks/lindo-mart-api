@@ -85,21 +85,11 @@ export class EquipmentController {
     }));
   }
 
-  @Get('category')
-  findCategory() {
-    return this.equipmentService.findAll({ category: 'Equipment Alert' }).then(result => ({
+  @Get('by-category/:category')
+  findByCategory(@Param('category') category: string) {
+    return this.equipmentService.findAll({ category }).then(result => ({
       success: true,
-      message: 'Equipment Alert items retrieved successfully',
-      data: result.items,
-      count: result.total
-    }));
-  }
-
-  @Get('facility')
-  findFacility() {
-    return this.equipmentService.findAll({ category: 'Facility Alert' }).then(result => ({
-      success: true,
-      message: 'Facility Alert items retrieved successfully',
+      message: `Equipment items for category "${category}" retrieved successfully`,
       data: result.items,
       count: result.total
     }));
