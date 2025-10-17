@@ -44,7 +44,7 @@ export class ReasonCodeService {
     const skip = (page - 1) * limit;
 
     const [reasonCodes, total] = await Promise.all([
-      this.reasonCodeModel.find().select('_id name description').sort({ name: 1 }).skip(skip).limit(limit).exec(),
+      this.reasonCodeModel.find().select('_id name description').sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
       this.reasonCodeModel.countDocuments().exec()
     ]);
 
@@ -101,6 +101,6 @@ export class ReasonCodeService {
   }
 
   async getPublicReasonCodes(): Promise<ReasonCode[]> {
-    return this.reasonCodeModel.find().select('_id name description').sort({ name: 1 }).exec();
+    return this.reasonCodeModel.find().select('_id name description').sort({ createdAt: -1 }).exec();
   }
 }

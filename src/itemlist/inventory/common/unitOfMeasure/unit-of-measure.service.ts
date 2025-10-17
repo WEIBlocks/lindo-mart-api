@@ -90,6 +90,6 @@ export class UnitOfMeasureService {
   }
 
   async getPublicUnitsOfMeasure(): Promise<any[]> {
-    return this.unitOfMeasureModel.find().select('_id fullName shortName description').sort({ fullName: 1 }).exec();
+    return this.unitOfMeasureModel.find().select('_id fullName shortName description').sort({ createdAt: -1 }).exec();
   }
 }

@@ -44,7 +44,7 @@ export class ActionsService {
     const skip = (page - 1) * limit;
 
     const [actions, total] = await Promise.all([
-      this.actionsModel.find().select('_id description').sort({ description: 1 }).skip(skip).limit(limit).exec(),
+      this.actionsModel.find().select('_id description').sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
       this.actionsModel.countDocuments().exec()
     ]);
 
@@ -101,6 +101,6 @@ export class ActionsService {
   }
 
   async getPublicActions(): Promise<Actions[]> {
-    return this.actionsModel.find().select('_id description').sort({ description: 1 }).exec();
+    return this.actionsModel.find().select('_id description').sort({ createdAt: -1 }).exec();
   }
 }

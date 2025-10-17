@@ -46,7 +46,7 @@ export class CategoryService {
     const query = type ? { type } : {};
 
     const [categories, total] = await Promise.all([
-      this.categoryModel.find(query).select('_id name subcategories').sort({ name: 1 }).skip(skip).limit(limit).exec(),
+      this.categoryModel.find(query).select('_id name subcategories').sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
       this.categoryModel.countDocuments(query).exec()
     ]);
 
@@ -122,7 +122,7 @@ export class CategoryService {
 
   async getPublicCategories(type?: string): Promise<Category[]> {
     const query = type ? { type } : {};
-    return this.categoryModel.find(query).select('_id name subcategories').sort({ name: 1 }).exec();
+    return this.categoryModel.find(query).select('_id name subcategories').sort({ createdAt: -1 }).exec();
   }
 
 }

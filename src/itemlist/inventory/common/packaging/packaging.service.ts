@@ -90,6 +90,6 @@ export class PackagingService {
   }
 
   async getPublicPackaging(): Promise<any[]> {
-    return this.packagingModel.find().select('_id name').sort({ name: 1 }).exec();
+    return this.packagingModel.find().select('_id name').sort({ createdAt: -1 }).exec();
   }
 }
