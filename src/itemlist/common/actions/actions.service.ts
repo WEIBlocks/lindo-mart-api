@@ -14,13 +14,14 @@ export class ActionsService {
 
   async create(createActionsDto: CreateActionsDto): Promise<Actions> {
     try {
-      // Check if action with same description already exists
+      // Check if action with same description and type already exists
       const existingAction = await this.actionsModel.findOne({
-        description: createActionsDto.description
+        description: createActionsDto.description,
+        type: createActionsDto.type
       });
 
       if (existingAction) {
-        throw new BadRequestException(`Action "${createActionsDto.description}" already exists`);
+        throw new BadRequestException(`Action "${createActionsDto.description}" already exists for type "${createActionsDto.type}"`);
       }
 
       const newAction = new this.actionsModel(createActionsDto);
@@ -34,7 +35,7 @@ export class ActionsService {
     }
   }
 
-  async findAll(page: number = 1, limit: number = 10): Promise<{
+  async findAll(page: number = 1, limit: number = 10, type?: string): Promise<{
     actions: Actions[],
     total: number,
     page: number,
@@ -42,10 +43,11 @@ export class ActionsService {
     totalPages: number
   }> {
     const skip = (page - 1) * limit;
+    const query = type ? { type } : {};
 
     const [actions, total] = await Promise.all([
-      this.actionsModel.find().select('_id description').sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
-      this.actionsModel.countDocuments().exec()
+      this.actionsModel.find(query).select('_id description type').sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
+      this.actionsModel.countDocuments(query).exec()
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -68,15 +70,16 @@ export class ActionsService {
   }
 
   async update(id: string, updateActionsDto: UpdateActionsDto): Promise<Actions> {
-    // Check for duplicate description if updating description
-    if (updateActionsDto.description) {
+    // Check for duplicate description and type if updating
+    if (updateActionsDto.description && updateActionsDto.type) {
       const existingAction = await this.actionsModel.findOne({
         description: updateActionsDto.description,
+        type: updateActionsDto.type,
         _id: { $ne: id }
       });
 
       if (existingAction) {
-        throw new BadRequestException(`Action "${updateActionsDto.description}" already exists`);
+        throw new BadRequestException(`Action "${updateActionsDto.description}" already exists for type "${updateActionsDto.type}"`);
       }
     }
 
@@ -100,7 +103,27 @@ export class ActionsService {
     }
   }
 
-  async getPublicActions(): Promise<Actions[]> {
-    return this.actionsModel.find().select('_id description').sort({ createdAt: -1 }).exec();
+  async getPublicActions(type?: string): Promise<Actions[]> {
+    const query = type ? { type } : {};
+    return this.actionsModel.find(query).select('_id description type').sort({ description: 1 }).exec();
+  }
+
+  async getActionsStats(): Promise<any> {
+    const total = await this.actionsModel.countDocuments();
+    
+    // Get unique types and their counts
+    const typeStats = await this.actionsModel.aggregate([
+      { $group: { _id: '$type', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    
+    return {
+      total,
+      typeStats
+    };
+  }
+
+  async getTypeOptions(): Promise<string[]> {
+    return ['equipment', 'operational-alerts'];
   }
 }

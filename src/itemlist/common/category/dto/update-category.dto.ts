@@ -13,6 +13,6 @@ export class UpdateCategoryDto {
   subcategories?: string[];
 
   @IsOptional()
-  @IsEnum(['inventory', 'equipment'])
+  @IsEnum(['inventory', 'equipment', 'operational-alerts'])
   type?: string;
 }

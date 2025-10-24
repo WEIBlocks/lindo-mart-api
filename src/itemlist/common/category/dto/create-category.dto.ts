@@ -10,6 +10,6 @@ export class CreateCategoryDto {
   @IsString({ each: true })
   subcategories: string[];
 
-  @IsEnum(['inventory', 'equipment'])
+  @IsEnum(['inventory', 'equipment', 'operational-alerts'])
   type: string;
 }

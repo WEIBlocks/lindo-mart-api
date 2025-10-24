@@ -122,7 +122,26 @@ export class CategoryService {
 
   async getPublicCategories(type?: string): Promise<Category[]> {
     const query = type ? { type } : {};
-    return this.categoryModel.find(query).select('_id name subcategories').sort({ createdAt: -1 }).exec();
+    return this.categoryModel.find(query).select('_id name subcategories type').sort({ name: 1 }).exec();
+  }
+
+  async getCategoryStats(): Promise<any> {
+    const total = await this.categoryModel.countDocuments();
+    
+    // Get unique types and their counts
+    const typeStats = await this.categoryModel.aggregate([
+      { $group: { _id: '$type', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    
+    return {
+      total,
+      typeStats
+    };
+  }
+
+  async getTypeOptions(): Promise<string[]> {
+    return ['inventory', 'equipment', 'operational-alerts'];
   }
 
 }

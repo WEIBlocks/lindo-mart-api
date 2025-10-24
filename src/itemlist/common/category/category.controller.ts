@@ -66,6 +66,33 @@ export class CategoryController {
     }));
   }
 
+  @Get('stats')
+  getCategoryStats() {
+    return this.categoryService.getCategoryStats().then(stats => ({
+      success: true,
+      message: 'Category statistics retrieved successfully',
+      data: stats
+    }));
+  }
+
+  @Get('by-type/:type')
+  findByType(@Param('type') type: string) {
+    return this.categoryService.getCategoriesByType(type).then(categories => ({
+      success: true,
+      message: `Categories for type "${type}" retrieved successfully`,
+      data: categories
+    }));
+  }
+
+  @Get('options/type')
+  getTypeOptions() {
+    return this.categoryService.getTypeOptions().then(options => ({
+      success: true,
+      message: 'Type options retrieved successfully',
+      data: options
+    }));
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoryService.findOne(id).then(category => ({

@@ -13,6 +13,7 @@ import { ItemsModule } from './items/items.module';
 import { InventoryModule } from './itemlist/inventory/inventory.module';
 import { EquipmentModule } from './itemlist/equipment/equipment.module';
 import { ItemListCommonModule } from './itemlist/common/common.module';
+import { OperationalAlertsModule } from './itemlist/operational-alerts/operational-alerts.module';
 import { Logger } from '@nestjs/common';
 
 @Module({
@@ -50,6 +51,7 @@ import { Logger } from '@nestjs/common';
     InventoryModule,
     EquipmentModule,
     ItemListCommonModule,
+    OperationalAlertsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
