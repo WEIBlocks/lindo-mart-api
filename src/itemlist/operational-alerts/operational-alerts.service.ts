@@ -116,17 +116,20 @@ export class OperationalAlertsService {
     }
   }
 
-  async getOperationalAlertsStats(): Promise<any> {
-    const total = await this.operationalAlertModel.countDocuments();
+  async getOperationalAlertsStats(type?: string): Promise<any> {
+    const query = type ? { type } : {};
+    const total = await this.operationalAlertModel.countDocuments(query);
     
     // Get unique categories and their counts
     const categoryStats = await this.operationalAlertModel.aggregate([
+      ...(type ? [{ $match: { type } }] : []),
       { $group: { _id: '$category', count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
 
     // Get unique subcategories and their counts
     const subcategoryStats = await this.operationalAlertModel.aggregate([
+      ...(type ? [{ $match: { type } }] : []),
       { $group: { _id: '$subcategory', count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
@@ -138,21 +141,24 @@ export class OperationalAlertsService {
     };
   }
 
-  async getCategoryOptions(): Promise<string[]> {
+  async getCategoryOptions(type?: string): Promise<string[]> {
     // Get unique categories from the database
-    const categories = await this.operationalAlertModel.distinct('category');
+    const query = type ? { type } : {};
+    const categories = await this.operationalAlertModel.distinct('category', query);
     return categories.sort();
   }
 
-  async getSubcategoryOptions(): Promise<string[]> {
+  async getSubcategoryOptions(type?: string): Promise<string[]> {
     // Get unique subcategories from the database
-    const subcategories = await this.operationalAlertModel.distinct('subcategory');
+    const query = type ? { type } : {};
+    const subcategories = await this.operationalAlertModel.distinct('subcategory', query);
     return subcategories.sort();
   }
 
-  async getActionNeededOptions(): Promise<string[]> {
+  async getActionNeededOptions(type?: string): Promise<string[]> {
     // Get unique action needed options from the database
-    const actions = await this.operationalAlertModel.distinct('actionNeeded');
+    const query = type ? { type } : {};
+    const actions = await this.operationalAlertModel.distinct('actionNeeded', query);
     return actions.sort();
   }
 }

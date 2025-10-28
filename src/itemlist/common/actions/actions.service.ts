@@ -124,6 +124,13 @@ export class ActionsService {
   }
 
   async getTypeOptions(): Promise<string[]> {
-    return ['equipment', 'operational-alerts'];
+    return [
+      'equipment',
+      'operational-alerts',
+      'handover-alerts',
+      'customer-feedback',
+      'health-safety',
+      'disaster-preparedness'
+    ];
   }
 }

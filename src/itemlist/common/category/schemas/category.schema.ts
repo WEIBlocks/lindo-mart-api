@@ -11,7 +11,15 @@ export class Category extends Document {
 
   @Prop({ 
     required: true, 
-    enum: ['inventory', 'equipment', 'operational-alerts'] 
+    enum: [
+      'inventory',
+      'equipment',
+      'operational-alerts',
+      'handover-alerts',
+      'customer-feedback',
+      'health-safety',
+      'disaster-preparedness'
+    ] 
   })
   type: string;
 }

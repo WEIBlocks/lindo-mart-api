@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Length } from 'class-validator';
+import { IsString, IsOptional, Length, IsIn } from 'class-validator';
 
 export class UpdateOperationalAlertDto {
   @IsOptional()
@@ -25,4 +25,9 @@ export class UpdateOperationalAlertDto {
   @IsString()
   @Length(1, 200)
   actionNeeded?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['operational-alerts', 'handover-alerts', 'customer-feedback', 'health-safety', 'disaster-preparedness'])
+  type?: string;
 }

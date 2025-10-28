@@ -45,13 +45,15 @@ export class OperationalAlertsController {
     @Query('search') search?: string,
     @Query('category') category?: string,
     @Query('subcategory') subcategory?: string,
-    @Query('actionNeeded') actionNeeded?: string
+    @Query('actionNeeded') actionNeeded?: string,
+    @Query('type') type?: string
   ) {
     // Build filters object
     const filters: any = {};
     if (category) filters.category = category;
     if (subcategory) filters.subcategory = subcategory;
     if (actionNeeded) filters.actionNeeded = actionNeeded;
+    if (type) filters.type = type;
 
     return this.operationalAlertsService
       .findAll(filters, page || 1, limit || 10, search)
@@ -72,14 +74,15 @@ export class OperationalAlertsController {
           category: category || null,
           subcategory: subcategory || null,
           actionNeeded: actionNeeded || null,
+          type: type || null,
         },
       }));
   }
 
   @Get('stats')
-  getOperationalAlertsStats() {
+  getOperationalAlertsStats(@Query('type') type?: string) {
     return this.operationalAlertsService
-      .getOperationalAlertsStats()
+      .getOperationalAlertsStats(type)
       .then((stats) => ({
         success: true,
         message: 'Operational alerts statistics retrieved successfully',
@@ -124,9 +127,9 @@ export class OperationalAlertsController {
   }
 
   @Get('options/category')
-  getCategoryOptions() {
+  getCategoryOptions(@Query('type') type?: string) {
     return this.operationalAlertsService
-      .getCategoryOptions()
+      .getCategoryOptions(type)
       .then((options) => ({
         success: true,
         message: 'Category options retrieved successfully',
@@ -135,9 +138,9 @@ export class OperationalAlertsController {
   }
 
   @Get('options/subcategory')
-  getSubcategoryOptions() {
+  getSubcategoryOptions(@Query('type') type?: string) {
     return this.operationalAlertsService
-      .getSubcategoryOptions()
+      .getSubcategoryOptions(type)
       .then((options) => ({
         success: true,
         message: 'Subcategory options retrieved successfully',
@@ -146,9 +149,9 @@ export class OperationalAlertsController {
   }
 
   @Get('options/action-needed')
-  getActionNeededOptions() {
+  getActionNeededOptions(@Query('type') type?: string) {
     return this.operationalAlertsService
-      .getActionNeededOptions()
+      .getActionNeededOptions(type)
       .then((options) => ({
         success: true,
         message: 'Action needed options retrieved successfully',

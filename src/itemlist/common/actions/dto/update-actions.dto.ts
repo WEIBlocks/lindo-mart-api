@@ -7,6 +7,13 @@ export class UpdateActionsDto {
   description?: string;
 
   @IsOptional()
-  @IsEnum(['equipment', 'operational-alerts'])
+  @IsEnum([
+    'equipment',
+    'operational-alerts',
+    'handover-alerts',
+    'customer-feedback',
+    'health-safety',
+    'disaster-preparedness'
+  ])
   type?: string;
 }

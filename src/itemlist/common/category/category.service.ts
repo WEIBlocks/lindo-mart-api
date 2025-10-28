@@ -141,7 +141,15 @@ export class CategoryService {
   }
 
   async getTypeOptions(): Promise<string[]> {
-    return ['inventory', 'equipment', 'operational-alerts'];
+    return [
+      'inventory',
+      'equipment',
+      'operational-alerts',
+      'handover-alerts',
+      'customer-feedback',
+      'health-safety',
+      'disaster-preparedness'
+    ];
   }
 
 }
