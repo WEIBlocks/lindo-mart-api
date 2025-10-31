@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class EquipmentItem extends Document {
   @Prop({ required: true })
-  itemName: string;
+  name: string;
 
   @Prop({ required: true })
   description: string;
@@ -28,3 +28,4 @@ export const EquipmentItemSchema = SchemaFactory.createForClass(EquipmentItem);
 EquipmentItemSchema.index({ category: 1 });
 EquipmentItemSchema.index({ subcategory: 1 });
 EquipmentItemSchema.index({ location: 1 });
+EquipmentItemSchema.index({ name: 1 });

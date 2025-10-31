@@ -11,6 +11,7 @@ import {
   HttpStatus,
   HttpCode,
   ParseIntPipe,
+  SetMetadata,
 } from '@nestjs/common';
 import { OperationalAlertsService } from './operational-alerts.service';
 import { CreateOperationalAlertDto } from './dto/create-operational-alert.dto';
@@ -156,6 +157,28 @@ export class OperationalAlertsController {
         success: true,
         message: 'Action needed options retrieved successfully',
         data: options,
+      }));
+  }
+
+  @Get('public')
+  @UseGuards(JwtAuthGuard) // Override class-level guards - only requires authentication, no role restriction
+  @SetMetadata('roles', []) // Explicitly set empty roles to bypass role restriction
+  getPublicOperationalAlerts(
+    @Query('category') category?: string,
+    @Query('subcategory') subcategory?: string,
+    @Query('type') type?: string
+  ) {
+    return this.operationalAlertsService
+      .getPublicOperationalAlerts(category, subcategory, type)
+      .then((alerts) => ({
+        success: true,
+        message: 'Public operational alerts retrieved successfully',
+        data: alerts,
+        filters: {
+          category: category || null,
+          subcategory: subcategory || null,
+          type: type || null,
+        },
       }));
   }
 

@@ -11,6 +11,7 @@ import {
   HttpStatus,
   HttpCode,
   ParseIntPipe,
+  SetMetadata,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
@@ -132,6 +133,23 @@ export class InventoryController {
     }));
   }
 
+  @Get('public')
+  @UseGuards(JwtAuthGuard) // Override class-level guards - only requires authentication, no role restriction
+  @SetMetadata('roles', []) // Explicitly set empty roles to bypass role restriction
+  getPublicInventoryItems(
+    @Query('category') category?: string,
+    @Query('subcategory') subcategory?: string
+  ) {
+    return this.inventoryService.getPublicInventoryItems(category, subcategory).then(items => ({
+      success: true,
+      message: 'Public inventory items retrieved successfully',
+      data: items,
+      filters: {
+        category: category || null,
+        subcategory: subcategory || null
+      }
+    }));
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

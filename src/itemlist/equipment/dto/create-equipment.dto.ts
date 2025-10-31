@@ -7,7 +7,7 @@ import {
 export class CreateEquipmentDto {
   @IsString()
   @Length(1, 100)
-  itemName: string;
+  name: string;
 
   @IsString()
   @Length(1, 500)

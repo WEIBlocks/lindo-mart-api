@@ -11,6 +11,7 @@ import {
   HttpCode,
   Query,
   ParseIntPipe,
+  SetMetadata,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -57,7 +58,8 @@ export class CategoryController {
   }
 
   @Get('public')
-  @UseGuards(JwtAuthGuard) // Only authentication, no role guard
+  @UseGuards(JwtAuthGuard) // Override class-level guards - only requires authentication, no role restriction
+  @SetMetadata('roles', []) // Explicitly set empty roles to bypass role restriction
   getPublicCategories(@Query('type') type?: string) {
     return this.categoryService.getPublicCategories(type).then(categories => ({
       success: true,

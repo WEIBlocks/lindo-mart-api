@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class OperationalAlert extends Document {
   @Prop({ required: true })
-  itemName: string;
+  name: string;
 
   @Prop({ required: true })
   description: string;
@@ -31,6 +31,6 @@ export const OperationalAlertSchema = SchemaFactory.createForClass(OperationalAl
 // Create indexes for better performance
 OperationalAlertSchema.index({ category: 1 });
 OperationalAlertSchema.index({ subcategory: 1 });
-OperationalAlertSchema.index({ itemName: 1 });
+OperationalAlertSchema.index({ name: 1 });
 OperationalAlertSchema.index({ actionNeeded: 1 });
 OperationalAlertSchema.index({ type: 1 });

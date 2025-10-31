@@ -153,5 +153,30 @@ export class InventoryService {
     };
   }
 
+  /**
+   * Get public inventory items filtered by category and subcategory
+   * Returns only: name, description, category, subcategory
+   */
+  async getPublicInventoryItems(category?: string, subcategory?: string): Promise<any[]> {
+    const query: any = {};
+    
+    // Build filter query
+    if (category) {
+      query.category = category;
+    }
+    if (subcategory) {
+      query.subcategory = subcategory;
+    }
+
+    // Fetch items and select only required fields
+    const items = await this.inventoryModel
+      .find(query)
+      .select('name description category subcategory')
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+
+      return items;
+  }
 
 }

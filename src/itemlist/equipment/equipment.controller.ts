@@ -11,6 +11,7 @@ import {
   HttpStatus,
   HttpCode,
   ParseIntPipe,
+  SetMetadata,
 } from '@nestjs/common';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
@@ -111,6 +112,24 @@ export class EquipmentController {
       success: true,
       message: 'Subcategory options retrieved successfully',
       data: options
+    }));
+  }
+
+  @Get('public')
+  @UseGuards(JwtAuthGuard) // Override class-level guards - only requires authentication, no role restriction
+  @SetMetadata('roles', []) // Explicitly set empty roles to bypass role restriction
+  getPublicEquipmentItems(
+    @Query('category') category?: string,
+    @Query('subcategory') subcategory?: string
+  ) {
+    return this.equipmentService.getPublicEquipmentItems(category, subcategory).then(items => ({
+      success: true,
+      message: 'Public equipment items retrieved successfully',
+      data: items,
+      filters: {
+        category: category || null,
+        subcategory: subcategory || null
+      }
     }));
   }
 

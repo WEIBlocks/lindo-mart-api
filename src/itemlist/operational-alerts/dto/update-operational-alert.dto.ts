@@ -4,7 +4,7 @@ export class UpdateOperationalAlertDto {
   @IsOptional()
   @IsString()
   @Length(1, 100)
-  itemName?: string;
+  name?: string;
 
   @IsOptional()
   @IsString()

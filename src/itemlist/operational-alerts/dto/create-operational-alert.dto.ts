@@ -3,7 +3,7 @@ import { IsString, Length, IsIn, IsOptional } from 'class-validator';
 export class CreateOperationalAlertDto {
   @IsString()
   @Length(1, 100)
-  itemName: string;
+  name: string;
 
   @IsString()
   @Length(1, 500)

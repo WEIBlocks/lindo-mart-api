@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { EquipmentItem } from './schemas/equipment.schema';
@@ -8,7 +12,7 @@ import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 @Injectable()
 export class EquipmentService {
   constructor(
-    @InjectModel(EquipmentItem.name) 
+    @InjectModel(EquipmentItem.name)
     private equipmentModel: Model<EquipmentItem>
   ) {}
 
@@ -16,27 +20,37 @@ export class EquipmentService {
     try {
       // First, clean up any old data with conflicting fields
       await this.cleanupOldData();
-      
+
       const newItem = new this.equipmentModel({
-        ...createEquipmentDto
+        ...createEquipmentDto,
       });
-      
+
       return await newItem.save();
     } catch (error) {
       console.error('Create equipment error:', error);
-      
+
       if (error.name === 'ValidationError') {
-        const validationErrors = Object.values(error.errors).map((err: any) => err.message);
-        throw new BadRequestException(`Validation failed: ${validationErrors.join(', ')}`);
+        const validationErrors = Object.values(error.errors).map(
+          (err: any) => err.message
+        );
+        throw new BadRequestException(
+          `Validation failed: ${validationErrors.join(', ')}`
+        );
       }
-      
+
       if (error.code === 11000) {
         // Extract the field that caused the duplicate
-        const duplicateField = error.keyPattern ? Object.keys(error.keyPattern)[0] : 'unknown field';
-        throw new BadRequestException(`Duplicate entry found for field: ${duplicateField}. Please use a unique value.`);
+        const duplicateField = error.keyPattern
+          ? Object.keys(error.keyPattern)[0]
+          : 'unknown field';
+        throw new BadRequestException(
+          `Duplicate entry found for field: ${duplicateField}. Please use a unique value.`
+        );
       }
-      
-      throw new BadRequestException(`Failed to create equipment item: ${error.message}`);
+
+      throw new BadRequestException(
+        `Failed to create equipment item: ${error.message}`
+      );
     }
   }
 
@@ -49,19 +63,30 @@ export class EquipmentService {
     }
   }
 
-  async findAll(filters: any = {}, page: number = 1, limit: number = 10, search?: string): Promise<{ items: EquipmentItem[], total: number, page: number, limit: number, totalPages: number }> {
+  async findAll(
+    filters: any = {},
+    page: number = 1,
+    limit: number = 10,
+    search?: string
+  ): Promise<{
+    items: EquipmentItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const skip = (page - 1) * limit;
-    
+
     // Build search query
     let query: any = { ...filters };
-    
+
     if (search && search.trim()) {
-      // Search in multiple fields: _id, itemName, description, location, maintenanceNotes
+      // Search in multiple fields: _id, name, description, location, maintenanceNotes
       const searchConditions: any[] = [
-        { itemName: { $regex: search.trim(), $options: 'i' } },
+        { name: { $regex: search.trim(), $options: 'i' } },
         { description: { $regex: search.trim(), $options: 'i' } },
         { location: { $regex: search.trim(), $options: 'i' } },
-        { maintenanceNotes: { $regex: search.trim(), $options: 'i' } }
+        { maintenanceNotes: { $regex: search.trim(), $options: 'i' } },
       ];
 
       // If search looks like MongoDB ObjectId, also search by _id
@@ -72,10 +97,7 @@ export class EquipmentService {
       // Combine search conditions with existing filters
       if (Object.keys(filters).length > 0) {
         query = {
-          $and: [
-            filters,
-            { $or: searchConditions }
-          ]
+          $and: [filters, { $or: searchConditions }],
         };
       } else {
         query.$or = searchConditions;
@@ -85,8 +107,13 @@ export class EquipmentService {
     console.log('Search query:', JSON.stringify(query, null, 2)); // Debug log
 
     const [items, total] = await Promise.all([
-      this.equipmentModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
-      this.equipmentModel.countDocuments(query).exec()
+      this.equipmentModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.equipmentModel.countDocuments(query).exec(),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -96,7 +123,7 @@ export class EquipmentService {
       total,
       page,
       limit,
-      totalPages
+      totalPages,
     };
   }
 
@@ -108,17 +135,22 @@ export class EquipmentService {
     return item;
   }
 
-  async update(id: string, updateEquipmentDto: UpdateEquipmentDto): Promise<EquipmentItem> {
-    const updatedItem = await this.equipmentModel.findByIdAndUpdate(
-      id,
-      { ...updateEquipmentDto },
-      { new: true, runValidators: true }
-    ).exec();
-    
+  async update(
+    id: string,
+    updateEquipmentDto: UpdateEquipmentDto
+  ): Promise<EquipmentItem> {
+    const updatedItem = await this.equipmentModel
+      .findByIdAndUpdate(
+        id,
+        { ...updateEquipmentDto },
+        { new: true, runValidators: true }
+      )
+      .exec();
+
     if (!updatedItem) {
       throw new NotFoundException(`Equipment item with ID "${id}" not found`);
     }
-    
+
     return updatedItem;
   }
 
@@ -131,16 +163,16 @@ export class EquipmentService {
 
   async getEquipmentStats(): Promise<any> {
     const total = await this.equipmentModel.countDocuments();
-    
+
     // Get unique categories and their counts
     const categoryStats = await this.equipmentModel.aggregate([
       { $group: { _id: '$category', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
+      { $sort: { count: -1 } },
     ]);
-    
+
     return {
       total,
-      categoryStats
+      categoryStats,
     };
   }
 
@@ -154,5 +186,34 @@ export class EquipmentService {
     // Get unique subcategories from the database
     const subcategories = await this.equipmentModel.distinct('subcategory');
     return subcategories.sort();
+  }
+
+  /**
+   * Get public equipment items filtered by category and subcategory
+   * Returns only: name, description, category, subcategory
+   */
+  async getPublicEquipmentItems(
+    category?: string,
+    subcategory?: string
+  ): Promise<any[]> {
+    const query: any = {};
+
+    // Build filter query
+    if (category) {
+      query.category = category;
+    }
+    if (subcategory) {
+      query.subcategory = subcategory;
+    }
+
+    // Fetch items and select only required fields
+    const items = await this.equipmentModel
+      .find(query)
+      .select('name description category subcategory')
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+
+    return items;
   }
 }
