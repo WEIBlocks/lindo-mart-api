@@ -385,7 +385,25 @@ export class FormsService {
         }))
     );
 
-    return this.formModel.find({ $or: recipientConditions }).exec();
+    const forms = await this.formModel
+      .find({ $or: recipientConditions })
+      .select('-formData -history')
+      .populate('userId', 'username role')
+      .populate({
+        path: 'recipient',
+        select: 'username role',
+        strictPopulate: false,
+      })
+      .exec();
+
+    // Format general forms to show generalRecipient
+    return forms.map((form) => {
+      const formObj: any = form.toObject();
+      if (formObj.recipientType === 'general') {
+        formObj.recipient = formObj.generalRecipient || 'general';
+      }
+      return formObj;
+    });
   }
 
   async moveForm(
@@ -461,7 +479,32 @@ export class FormsService {
       null
     );
 
-    return { message: 'Form moved successfully' };
+    // Fetch the updated form with populated user details
+    const updatedForm = await this.formModel
+      .findById(formId)
+      .select('-formData -history')
+      .populate('userId', 'username role')
+      .populate({
+        path: 'recipient',
+        select: 'username role',
+        strictPopulate: false,
+      })
+      .exec();
+
+    if (!updatedForm) {
+      throw new NotFoundException('Form not found after update');
+    }
+
+    // Format general forms to show generalRecipient
+    const formObj: any = updatedForm.toObject();
+    if (formObj.recipientType === 'general') {
+      formObj.recipient = formObj.generalRecipient || 'general';
+    }
+
+    return {
+      message: 'Form moved successfully',
+      form: formObj,
+    };
   }
 
   async getMovedForms(userId: string) {
@@ -473,22 +516,46 @@ export class FormsService {
     const movedForms = user.movedForms;
     const populatedForms = await Promise.all(
       movedForms.map(async (movedForm) => {
-        const form = await this.formModel.findById(movedForm.formId).exec();
+        const form = await this.formModel
+          .findById(movedForm.formId)
+          .select('-formData -history')
+          .populate('userId', 'username role')
+          .populate({
+            path: 'recipient',
+            select: 'username role',
+            strictPopulate: false,
+          })
+          .exec();
+
+        if (!form) {
+          return {
+            formId: movedForm.formId,
+            formData: null,
+          };
+        }
+
+        // Format general forms to show generalRecipient
+        const formObj: any = form.toObject();
+        if (formObj.recipientType === 'general') {
+          formObj.recipient = formObj.generalRecipient || 'general';
+        }
+
         return {
           formId: movedForm.formId,
-          formData: form
-            ? {
-                status: form.status,
-                _id: form._id,
-                userId: form.userId,
-                formType: form.formType,
-                formData: form.formData,
-                recipient: form.recipient,
-                createdAt: form.createdAt,
-                history: form.history,
-                alertId: form.alertId,
-              }
-            : null,
+          formData: {
+            status: formObj.status,
+            _id: formObj._id,
+            userId: formObj.userId,
+            formType: formObj.formType,
+            recipient: formObj.recipient,
+            recipientType: formObj.recipientType,
+            generalRecipient: formObj.generalRecipient,
+            forDate: formObj.forDate,
+            notes: formObj.notes,
+            createdAt: formObj.createdAt,
+            alertId: formObj.alertId,
+            signatureUrl: formObj.signatureUrl,
+          },
         };
       })
     );
