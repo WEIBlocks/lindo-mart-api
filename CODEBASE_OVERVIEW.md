@@ -2,666 +2,567 @@
 
 ## 📁 Project Structure
 
+This is a **NestJS** (Node.js) backend API for **Lindo Mart Form Management System** using:
+- **TypeScript**
+- **MongoDB** (via Mongoose)
+- **JWT Authentication**
+- **WebSocket** (Socket.IO) for real-time alerts
+- **Cloudinary** for image uploads
+- **Email Services** (Gmail SMTP & Resend)
+- **SMS Service** (Twilio)
+
+---
+
+## 🏗️ Architecture Overview
+
+### Main Entry Point
+- **`src/main.ts`**: Application bootstrap, sets global prefix `/api/v1`, enables CORS, connects to MongoDB
+
+### Core Module
+- **`src/app.module.ts`**: Root module that imports all feature modules
+
+---
+
+## 📂 Folder Structure
+
 ```
-lindo-mart-api/
-├── src/
-│   ├── main.ts                          # Application entry point
-│   ├── app.module.ts                    # Root module
-│   ├── app.controller.ts                 # Root controller
-│   ├── app.service.ts                   # Root service
-│   │
-│   ├── auth/                            # Authentication Module
-│   │   ├── auth.controller.ts          # Login, Register, Reset Password
-│   │   ├── auth.service.ts              # JWT, bcrypt, user validation
-│   │   ├── auth.module.ts
-│   │   ├── jwt.strategy.ts              # Passport JWT strategy
-│   │   └── jwt-auth.guard.ts            # JWT authentication guard
-│   │
-│   ├── user/                            # User Management Module
-│   │   ├── user.controller.ts          # Profile, Roles, CRUD
-│   │   ├── user.service.ts
-│   │   └── user.module.ts
-│   │
-│   ├── forms/                           # Form Management Module
-│   │   ├── forms.controller.ts         # Submit, Get, Update Forms
-│   │   ├── forms.service.ts             # Form CRUD, status updates
-│   │   └── forms.module.ts
-│   │
-│   ├── alerts/                          # Alert/Notification Module
-│   │   ├── alerts.controller.ts        # Get alerts, update status
-│   │   ├── alerts.service.ts           # Email, SMS, WebSocket alerts
-│   │   ├── alerts.gateway.ts           # Socket.IO WebSocket gateway
-│   │   └── alerts.module.ts
-│   │
-│   ├── dashboard/                       # Dashboard Module
-│   │   ├── dashboard.controller.ts     # Stats, forms, move forms
-│   │   ├── dashboard.service.ts        # Analytics, metrics
-│   │   └── dashboard.module.ts
-│   │
-│   ├── contact/                         # Contact Form Module
-│   │   ├── contact.controller.ts       # Submit, Get contacts
-│   │   ├── contact.service.ts
-│   │   └── contact.module.ts
-│   │
-│   ├── items/                           # Items Module (Generic)
-│   │   ├── items.controller.ts         # CRUD operations
-│   │   ├── items.service.ts
-│   │   ├── items.module.ts
-│   │   └── dto/
-│   │       └── create-item.dto.ts
-│   │
-│   ├── itemlist/                        # Item List Modules
-│   │   ├── inventory/                   # Inventory Management
-│   │   │   ├── inventory.controller.ts # CRUD, filters, stats
-│   │   │   ├── inventory.service.ts
-│   │   │   ├── inventory.module.ts
-│   │   │   ├── schemas/
-│   │   │   │   └── inventory.schema.ts
-│   │   │   ├── dto/
-│   │   │   │   ├── create-inventory.dto.ts
-│   │   │   │   └── update-inventory.dto.ts
-│   │   │   └── common/
-│   │   │       ├── packaging/          # Packaging sub-module
-│   │   │       └── unitOfMeasure/       # Unit of Measure sub-module
-│   │   │
-│   │   ├── equipment/                   # Equipment Management
-│   │   │   ├── equipment.controller.ts # CRUD, filters, stats
-│   │   │   ├── equipment.service.ts
-│   │   │   ├── equipment.module.ts
-│   │   │   ├── schemas/
-│   │   │   │   └── equipment.schema.ts
-│   │   │   ├── dto/
-│   │   │   │   ├── create-equipment.dto.ts
-│   │   │   │   └── update-equipment.dto.ts
-│   │   │   └── common/
-│   │   │       └── reasonCode/          # Reason Code sub-module
-│   │   │
-│   │   ├── operational-alerts/         # Operational Alerts
-│   │   │   ├── operational-alerts.controller.ts
-│   │   │   ├── operational-alerts.service.ts
-│   │   │   ├── operational-alerts.module.ts
-│   │   │   ├── schemas/
-│   │   │   │   └── operational-alert.schema.ts
-│   │   │   └── dto/
-│   │   │
-│   │   └── common/                      # Shared Item List Resources
-│   │       ├── common.module.ts
-│   │       ├── category/                # Category management
-│   │       └── actions/                 # Actions management
-│   │
-│   ├── schemas/                         # MongoDB Schemas (Models)
-│   │   ├── user/
-│   │   │   └── user.schema.ts          # User model
-│   │   ├── form/
-│   │   │   └── form.schema.ts          # Form model
-│   │   ├── alert/
-│   │   │   └── alert.schema.ts        # Alert model
-│   │   ├── contact.schema.ts          # Contact model
-│   │   └── item/
-│   │       └── item.schema.ts          # Generic Item model
-│   │
-│   ├── common/                          # Shared Services & Utilities
-│   │   ├── common.module.ts
-│   │   ├── cloudinary.service.ts       # Image upload service
-│   │   ├── gmail.service.ts            # Email service (nodemailer)
-│   │   ├── twilio.service.ts           # SMS service
-│   │   ├── resend.service.ts           # Alternative email service
-│   │   ├── decorators/
-│   │   │   ├── current-user.decorator.ts
-│   │   │   └── roles.decorator.ts
-│   │   └── guards/
-│   │       └── roles.guard.ts          # Role-based access control
-│   │
-│   └── types/                           # TypeScript Types
-│       ├── custom-request.interface.ts
-│       └── express.d.ts
-│
-├── test/                                # E2E Tests
-├── dist/                                # Compiled JavaScript
-├── package.json
-├── tsconfig.json
-└── tsconfig.build.json
+src/
+├── alerts/              # Alert management system
+├── auth/                # Authentication & authorization
+├── common/              # Shared services & utilities
+├── contact/             # Contact form handling
+├── dashboard/           # Dashboard statistics & operations
+├── forms/               # Form submission & management
+├── items/                # General items management
+├── itemlist/            # Item list modules
+│   ├── common/          # Shared categories & actions
+│   ├── equipment/       # Equipment management
+│   ├── inventory/       # Inventory management
+│   └── operational-alerts/ # Operational alerts
+├── schemas/             # MongoDB schemas (models)
+├── types/               # TypeScript type definitions
+└── user/                # User management
 ```
 
 ---
 
-## 🛣️ API Routes
+## 🔐 Authentication & Authorization
+
+### Module: `auth/`
+- **Controller**: `auth.controller.ts`
+  - `POST /auth/login` - User login
+  - `POST /auth/register` - User registration
+  - `POST /auth/reset-password` - Password reset (protected)
+
+- **Service**: `auth.service.ts`
+  - Validates users, handles login/register
+  - Password hashing with bcrypt
+  - JWT token generation
+  - Sends login alerts via email
+
+- **Strategy**: `jwt.strategy.ts`
+  - JWT token validation
+  - Extracts user info from token payload
+
+- **Guard**: `jwt-auth.guard.ts`
+  - Protects routes requiring authentication
+
+### Roles System
+- **Roles**: `Staff`, `Supervisor`, `Management`, `Super-Admin`
+- **Guard**: `common/guards/roles.guard.ts` - Role-based access control
+- **Decorator**: `common/decorators/roles.decorator.ts` - `@Roles('Super-Admin')`
+
+---
+
+## 👤 User Management
+
+### Module: `user/`
+- **Controller**: `user.controller.ts`
+  - `GET /users/profile` - Get current user profile
+  - `PUT /users/profile` - Update profile
+  - `GET /users/roles` - Get available roles
+  - `PUT /users/:id/role` - Update user role
+  - `GET /users` - Get all users
+  - `DELETE /users/:id` - Delete user (Super-Admin only)
+
+- **Service**: `user.service.ts`
+  - Profile management
+  - Role updates with alert notifications
+  - User CRUD operations
+
+### Schema: `schemas/user/user.schema.ts`
+```typescript
+- username: string (required)
+- password: string (hashed, required)
+- role: string (default: 'Staff')
+- phoneNumber: string (required)
+- email: string (required)
+- movedForms: array (tracks form movements)
+```
+
+---
+
+## 📋 Forms Management
+
+### Module: `forms/`
+- **Controller**: `forms.controller.ts`
+  - `POST /forms/submit` - Submit new form
+  - `GET /forms/user-forms` - Get user's submitted forms
+  - `GET /forms/user-form/:id` - Get form status
+  - `PATCH /forms/:formId/status` - Update form status (with signature)
+
+- **Service**: `forms.service.ts`
+  - Form submission with history tracking
+  - Status updates with signature upload (Cloudinary)
+  - Form movement between users
+  - Alert generation on form events
+
+### Schema: `schemas/form/form.schema.ts`
+```typescript
+- userId: string (form creator)
+- formType: string (form category)
+- formData: object (form content)
+- status: string (Pending, In-Progress, Completed, etc.)
+- recipient: string (user ID or role)
+- alertId: string (related alert)
+- signatureUrl: string (Cloudinary URL)
+- history: array (status change history)
+- createdAt: Date
+```
+
+---
+
+## 🔔 Alerts System
+
+### Module: `alerts/`
+- **Controller**: `alerts.controller.ts`
+  - `GET /alerts/all` - Get all alerts (Super-Admin)
+  - `GET /alerts/user` - Get user's alerts
+  - `PATCH /alerts/user/:id/status` - Update alert status
+
+- **Service**: `alerts.service.ts`
+  - Multi-channel notifications:
+    - **In-app** (WebSocket)
+    - **Email** (Gmail SMTP via Resend)
+    - **SMS** (Twilio - optional)
+  - Smart email templates based on alert type
+  - Role-based or user-specific targeting
+
+- **Gateway**: `alerts.gateway.ts` (WebSocket)
+  - Real-time notifications via Socket.IO
+  - User-specific rooms
+  - JWT authentication for connections
+
+### Schema: `schemas/alert/alert.schema.ts`
+```typescript
+- message: string
+- role: string (optional)
+- userId: string (target user)
+- categories: string[] (in-app, email, sms)
+- relatedId: string (related form/item ID)
+- userIds: string[] (multiple targets)
+- createdAt: Date
+```
+
+---
+
+## 📊 Dashboard
+
+### Module: `dashboard/`
+- **Controller**: `dashboard.controller.ts`
+  - `GET /dashboard/admin-stats` - Admin statistics
+  - `GET /dashboard/forms` - All forms
+  - `GET /dashboard/user-forms` - User-related forms
+  - `POST /dashboard/move-form` - Move form to another user
+  - `GET /dashboard/moved-forms` - Get moved forms
+  - `POST /dashboard/trigger-followup` - Trigger follow-up alert
+
+- **Service**: `dashboard.service.ts`
+  - Time-based statistics (today, 7 days, 30 days)
+  - Form category statistics
+  - Performance metrics (completion times)
+  - Form movement tracking
+
+---
+
+## 📦 Inventory Management
+
+### Module: `itemlist/inventory/`
+- **Controller**: `inventory.controller.ts`
+  - Full CRUD operations
+  - Filtering by: perishable, essential, status, unitOfMeasure
+  - Search functionality
+  - Pagination
+  - Public endpoint (read-only, filtered fields)
+
+- **Service**: `inventory.service.ts`
+  - Inventory item management
+  - Statistics (total, perishable, essential counts)
+  - Public data filtering
+
+### Schema: `schemas/inventory.schema.ts`
+```typescript
+- name: string
+- description: string
+- unitOfMeasure: string
+- unitsPerPackage: number
+- reorderLevel: string
+- perishable: boolean
+- essential: boolean
+- category: string
+- subcategory: string
+- lastUpdated: Date
+```
+
+### Sub-modules:
+- **Unit of Measure**: `common/unitOfMeasure/`
+- **Packaging**: `common/packaging/`
+
+---
+
+## 🛠️ Equipment Management
+
+### Module: `itemlist/equipment/`
+- **Controller**: `equipment.controller.ts`
+  - Full CRUD operations
+  - Filtering by category, subcategory, location
+  - Search functionality
+  - Category/subcategory options
+  - Public endpoint
+
+- **Service**: `equipment.service.ts`
+  - Equipment item management
+  - Statistics by category
+  - Category/subcategory options
+
+### Schema: `schemas/equipment.schema.ts`
+```typescript
+- name: string
+- description: string
+- category: string
+- subcategory: string
+- location: string
+- maintenanceNotes: string
+```
+
+### Sub-modules:
+- **Reason Code**: `common/reasonCode/`
+
+---
+
+## ⚠️ Operational Alerts
+
+### Module: `itemlist/operational-alerts/`
+- **Controller**: `operational-alerts.controller.ts`
+  - Full CRUD operations
+  - Filtering by category, subcategory, actionNeeded, type
+  - Multiple filter endpoints
+  - Public endpoint
+
+- **Service**: `operational-alerts.service.ts`
+  - Alert management
+  - Statistics by category/subcategory
+  - Type-based filtering
+
+### Schema: `schemas/operational-alert.schema.ts`
+```typescript
+- name: string
+- description: string
+- category: string
+- subcategory: string
+- actionNeeded: string
+- type: enum (operational-alerts, handover-alerts, customer-feedback, health-safety, disaster-preparedness)
+```
+
+---
+
+## 📁 Common Item List Features
+
+### Module: `itemlist/common/`
+- **Categories**: `category/`
+  - Category management with subcategories
+  - Type-based categories (inventory, equipment, operational-alerts, etc.)
+  - Public endpoint for category options
+
+- **Actions**: `actions/`
+  - Action definitions for different types
+  - Type-based actions
+  - Public endpoint for action options
+
+---
+
+## 📝 Items Management
+
+### Module: `items/`
+- **Controller**: `items.controller.ts`
+  - `POST /items` - Create item (Admin/Super-Admin)
+  - `GET /items` - Get all items (with filters)
+  - `GET /items/action-needed` - Get items needing action
+  - `GET /items/:id` - Get single item
+  - `PATCH /items/:id` - Update item (Admin/Super-Admin)
+  - `DELETE /items/:id` - Delete item (Super-Admin only)
+
+- **Service**: `items.service.ts`
+  - General item management
+  - Action-needed filtering
+
+### Schema: `schemas/item/item.schema.ts`
+```typescript
+- name: string
+- description: string
+- categories: string[]
+- minimumLevel: string
+- actionsNeeded: string[]
+```
+
+---
+
+## 📧 Contact Management
+
+### Module: `contact/`
+- **Controller**: `contact.controller.ts`
+  - `POST /contact` - Create contact message
+  - `GET /contact` - Get all contacts
+  - `GET /contact/:id` - Get single contact
+  - `PUT /contact/:id/resolve` - Mark as resolved
+
+- **Service**: `contact.service.ts`
+  - Contact form handling
+  - Resolution tracking
+
+### Schema: `schemas/contact.schema.ts`
+```typescript
+- name: string
+- email: string
+- subject: string
+- message: string
+- isResolved: boolean
+```
+
+---
+
+## 🔧 Common Services
+
+### Module: `common/`
+
+#### **CloudinaryService** (`cloudinary.service.ts`)
+- Signature image uploads
+- Base64 to Cloudinary conversion
+- Folder organization (`signatures/`)
+
+#### **GmailService** (`gmail.service.ts`)
+- SMTP email sending via Gmail
+- Multiple email templates:
+  - Form received
+  - Status updates
+  - Role updates
+  - Form moved
+  - Follow-up reminders
+- Fallback to STARTTLS (port 587) if SSL fails
+
+#### **ResendService** (`resend.service.ts`)
+- Alternative email service
+- Same email templates as GmailService
+- Uses Resend API
+
+#### **TwilioService** (`twilio.service.ts`)
+- SMS notifications
+- Phone number validation & formatting
+- Bulk SMS support
+
+---
+
+## 🛡️ Guards & Decorators
+
+### Guards
+- **`JwtAuthGuard`**: Validates JWT token
+- **`RolesGuard`**: Checks user role against required roles
+
+### Decorators
+- **`@Roles(...roles)`**: Specify required roles for route
+- **`@CurrentUser()`**: Extract current user from request
+
+---
+
+## 📡 API Endpoints Summary
 
 ### Base URL: `/api/v1`
 
-### 🔐 Authentication Routes (`/auth`)
-- `POST /auth/login` - User login (returns JWT token)
-- `POST /auth/register` - User registration
-- `POST /auth/reset-password` - Reset password (protected)
+#### Authentication
+- `POST /auth/login`
+- `POST /auth/register`
+- `POST /auth/reset-password` (protected)
 
-### 👤 User Routes (`/users`) [Protected]
-- `GET /users/profile` - Get current user profile
-- `PUT /users/profile` - Update current user profile
-- `GET /users/roles` - Get available roles
-- `PUT /users/:id/role` - Update user role
-- `GET /users` - Get all users
-- `DELETE /users/:id` - Delete user (Super-Admin only)
+#### Users
+- `GET /users/profile` (protected)
+- `PUT /users/profile` (protected)
+- `GET /users/roles` (protected)
+- `PUT /users/:id/role` (protected)
+- `GET /users` (protected)
+- `DELETE /users/:id` (Super-Admin)
 
-### 📋 Forms Routes (`/forms`) [Protected]
-- `POST /forms/submit` - Submit a new form
-- `GET /forms/user-forms` - Get forms created by user
-- `GET /forms/user-form/:id` - Get specific form by ID
-- `PATCH /forms/:formId/status` - Update form status (with optional signature)
+#### Forms
+- `POST /forms/submit` (protected)
+- `GET /forms/user-forms` (protected)
+- `GET /forms/user-form/:id` (protected)
+- `PATCH /forms/:formId/status` (protected)
 
-### 🔔 Alerts Routes (`/alerts`) [Protected]
-- `GET /alerts/all` - Get all alerts (Super-Admin only)
-- `GET /alerts/user` - Get alerts for current user
-- `PATCH /alerts/user/:id/status` - Update alert status
+#### Alerts
+- `GET /alerts/all` (Super-Admin)
+- `GET /alerts/user` (protected)
+- `PATCH /alerts/user/:id/status` (protected)
 
-### 📊 Dashboard Routes (`/dashboard`) [Protected]
-- `GET /dashboard/admin-stats` - Admin dashboard statistics
-- `GET /dashboard/forms` - Get all forms
-- `GET /dashboard/user-forms` - Get user-related forms
-- `POST /dashboard/move-form` - Move form to another recipient
-- `GET /dashboard/moved-forms` - Get moved forms
-- `POST /dashboard/trigger-followup` - Trigger follow-up alert
+#### Dashboard
+- `GET /dashboard/admin-stats` (protected)
+- `GET /dashboard/forms` (protected)
+- `GET /dashboard/user-forms` (protected)
+- `POST /dashboard/move-form` (protected)
+- `GET /dashboard/moved-forms` (protected)
+- `POST /dashboard/trigger-followup` (protected)
 
-### 📧 Contact Routes (`/contact`)
-- `POST /contact` - Submit contact form
-- `GET /contact` - Get all contacts
-- `GET /contact/:id` - Get contact by ID
-- `PUT /contact/:id/resolve` - Mark contact as resolved
+#### Inventory
+- `POST /itemlist/inventory/items` (Admin/Super-Admin)
+- `GET /itemlist/inventory/items` (Admin/Super-Admin)
+- `GET /itemlist/inventory/items/public` (authenticated)
+- `GET /itemlist/inventory/items/stats` (Admin/Super-Admin)
+- `GET /itemlist/inventory/items/:id` (Admin/Super-Admin)
+- `PATCH /itemlist/inventory/items/:id` (Admin/Super-Admin)
+- `DELETE /itemlist/inventory/items/:id` (Admin/Super-Admin)
 
-### 📦 Items Routes (`/items`) [Protected]
-- `POST /items` - Create item (Admin/Super-Admin)
-- `GET /items` - Get all items (with filters)
-- `GET /items/action-needed` - Get items needing action
-- `GET /items/:id` - Get item by ID
-- `PATCH /items/:id` - Update item (Admin/Super-Admin)
-- `DELETE /items/:id` - Delete item (Super-Admin only)
+#### Equipment
+- `POST /itemlist/equipment/items` (Admin/Super-Admin)
+- `GET /itemlist/equipment/items` (Admin/Super-Admin)
+- `GET /itemlist/equipment/items/public` (authenticated)
+- Similar CRUD endpoints
 
-### 📦 Inventory Routes (`/itemlist/inventory/items`) [Protected - Admin/Super-Admin]
-- `POST /itemlist/inventory/items` - Create inventory item
-- `GET /itemlist/inventory/items` - Get all (with pagination, filters)
-- `GET /itemlist/inventory/items/stats` - Get inventory statistics
-- `GET /itemlist/inventory/items/essential` - Get essential items
-- `GET /itemlist/inventory/items/perishable` - Get perishable items
-- `GET /itemlist/inventory/items/status/:status` - Get items by status
-- `GET /itemlist/inventory/items/:id` - Get item by ID
-- `PATCH /itemlist/inventory/items/:id` - Update inventory item
-- `DELETE /itemlist/inventory/items/:id` - Delete inventory item
+#### Operational Alerts
+- `POST /itemlist/operational-alerts` (Admin/Super-Admin)
+- `GET /itemlist/operational-alerts` (Admin/Super-Admin)
+- `GET /itemlist/operational-alerts/public` (authenticated)
+- Similar CRUD endpoints
 
-### 🔧 Equipment Routes (`/itemlist/equipment/items`) [Protected - Admin/Super-Admin]
-- `POST /itemlist/equipment/items` - Create equipment item
-- `GET /itemlist/equipment/items` - Get all (with pagination, filters)
-- `GET /itemlist/equipment/items/stats` - Get equipment statistics
-- `GET /itemlist/equipment/items/by-category/:category` - Get by category
-- `GET /itemlist/equipment/items/options/category` - Get category options
-- `GET /itemlist/equipment/items/options/subcategory` - Get subcategory options
-- `GET /itemlist/equipment/items/:id` - Get item by ID
-- `PATCH /itemlist/equipment/items/:id` - Update equipment item
-- `DELETE /itemlist/equipment/items/:id` - Delete equipment item
+#### Categories & Actions
+- `POST /itemlist/common/categories` (Admin/Super-Admin)
+- `GET /itemlist/common/categories` (Admin/Super-Admin)
+- `GET /itemlist/common/categories/public` (authenticated)
+- Similar endpoints for actions
 
----
+#### Items
+- `POST /items` (Admin/Super-Admin)
+- `GET /items` (protected)
+- `GET /items/action-needed` (protected)
+- `GET /items/:id` (protected)
+- `PATCH /items/:id` (Admin/Super-Admin)
+- `DELETE /items/:id` (Super-Admin)
 
-## 📊 Database Schemas (Models)
-
-### User Schema (`user.schema.ts`)
-```typescript
-{
-  username: string (required)
-  password: string (required, hashed)
-  role: string (default: 'Staff')
-  phoneNumber: string (required)
-  email: string (required)
-  resetPasswordToken?: string
-  resetPasswordExpires?: number
-  movedForms: Array<{
-    formId: string
-    recipientId: string
-    status: string
-  }>
-}
-```
-
-### Form Schema (`form.schema.ts`)
-```typescript
-{
-  userId: string (required)
-  formType: string (required)
-  formData: Record<string, any> (required)
-  status: string (default: 'Pending')
-  createdAt: Date (auto)
-  recipient: string (required) // userId or role
-  alertId?: string
-  signatureUrl?: string
-  history: Array<{
-    status: string
-    timestamp: Date
-    userId: string
-    fromUserId: string
-    toUserId: string
-  }>
-}
-```
-
-### Alert Schema (`alert.schema.ts`)
-```typescript
-{
-  message: string (required)
-  role?: string
-  userId?: string
-  categories: string[] (required) // ['in-app', 'email', 'sms']
-  relatedId?: string // Form ID or related entity
-  userIds?: string[]
-  createdAt: Date (auto)
-}
-```
-
-### Contact Schema (`contact.schema.ts`)
-```typescript
-{
-  name: string (required)
-  email: string (required)
-  subject: string (required)
-  message: string (required)
-  isResolved: boolean (default: false)
-  createdAt: Date (auto)
-  updatedAt: Date (auto)
-}
-```
-
-### Item Schema (`item.schema.ts`)
-```typescript
-{
-  name: string (required)
-  description: string (required)
-  categories: string[]
-  minimumLevel: string
-  actionsNeeded: string[]
-  createdAt: Date
-  updatedAt: Date
-}
-```
-
-### Inventory Item Schema (`inventory.schema.ts`)
-```typescript
-{
-  name: string (required)
-  description: string (required)
-  unitOfMeasure: string (required) // Reference to UnitOfMeasure
-  unitsPerPackage: number (required, min: 0)
-  reorderLevel: string (required)
-  perishable: boolean (default: false)
-  essential: boolean (default: false)
-  category: string (required) // Reference to Category
-  subcategory: string (required)
-  lastUpdated: Date (auto)
-  createdAt: Date (auto)
-  updatedAt: Date (auto)
-}
-```
-
-### Equipment Item Schema (`equipment.schema.ts`)
-```typescript
-{
-  itemName: string (required)
-  description: string (required)
-  category: string (required)
-  subcategory: string (required)
-  location: string (required)
-  maintenanceNotes: string (default: '')
-  createdAt: Date (auto)
-  updatedAt: Date (auto)
-}
-```
-
-### Operational Alert Schema (`operational-alert.schema.ts`)
-```typescript
-{
-  itemName: string (required)
-  description: string (required)
-  category: string (required)
-  subcategory: string (required)
-  actionNeeded: string (required)
-  type: string (required, enum: [
-    'operational-alerts',
-    'handover-alerts',
-    'customer-feedback',
-    'health-safety',
-    'disaster-preparedness'
-  ])
-  createdAt: Date (auto)
-  updatedAt: Date (auto)
-}
-```
+#### Contact
+- `POST /contact` (public)
+- `GET /contact` (public)
+- `GET /contact/:id` (public)
+- `PUT /contact/:id/resolve` (public)
 
 ---
 
-## 🔧 Services Overview
+## 🔌 WebSocket
 
-### AuthService
-- `validateUser()` - Validate username/password
-- `login()` - Authenticate and generate JWT token
-- `register()` - Create new user with hashed password
-- `resetPassword()` - Update user password
-
-### UserService
-- `getProfile()` - Get user profile
-- `updateProfile()` - Update user profile
-- `getRoles()` - Get available roles: ['Staff', 'Supervisor', 'Management', 'Super-Admin']
-- `updateRole()` - Update user role (triggers alert)
-- `getAllUsers()` - Get all users
-- `deleteUser()` - Delete user
-
-### FormsService
-- `submitForm()` - Create new form with history tracking
-- `getUserForms()` - Get forms created by user
-- `getFormStatus()` - Get form details
-- `updateFormStatus()` - Update status (with signature upload)
-- `getAllForms()` - Get all forms
-- `getUserRelatedForms()` - Get forms where user is recipient
-- `moveForm()` - Transfer form to another user/role
-- `getMovedForms()` - Get forms moved by user
-
-### AlertsService
-- `sendAlert()` - Send multi-channel alert (WebSocket, Email, SMS)
-  - Supports: user ID, role, or array of user IDs
-  - Channels: in-app (WebSocket), email (Resend/Gmail), SMS (Twilio)
-- `getAllAlerts()` - Get all alerts (Super-Admin)
-- `getUserAlerts()` - Get alerts for user
-- `updateAlertStatus()` - Update alert and related form status
-
-### AlertsGateway (WebSocket)
-- `handleConnection()` - Authenticate WebSocket connection via JWT
-- `handleDisconnect()` - Clean up connections
-- `sendNotificationToUser()` - Send real-time notification to specific user
-- `sendNotificationByRole()` - Send notification to role-based room
-
-### DashboardService
-- `getAdminDashboardStats()` - Comprehensive statistics:
-  - Time-based stats (today, last 7 days, last 30 days)
-  - Form category statistics
-  - Performance metrics (avg completion time, etc.)
-- `getAllForms()` - Get all forms
-- `getUserRelatedForms()` - Get user-related forms
-- `moveForm()` - Move form functionality
-- `getMovedForms()` - Get moved forms
-- `triggerFollowUp()` - Send follow-up alert
-
-### ContactService
-- `create()` - Create contact entry
-- `findAll()` - Get all contacts (sorted by date)
-- `findById()` - Get contact by ID
-- `markAsResolved()` - Mark contact as resolved
-
-### ItemsService
-- `create()` - Create generic item
-- `findAll()` - Get all items with filters
-- `findActionNeeded()` - Get items needing action
-- `findOne()` - Get item by ID
-- `update()` - Update item
-- `remove()` - Delete item
-
-### InventoryService
-- `create()` - Create inventory item
-- `findAll()` - Get with pagination, search, filters (perishable, essential, status, etc.)
-- `getInventoryStats()` - Statistics
-- `findOne()` - Get by ID
-- `update()` - Update inventory item
-- `remove()` - Delete inventory item
-
-### EquipmentService
-- `create()` - Create equipment item
-- `findAll()` - Get with pagination, search, filters (category, subcategory, location)
-- `getEquipmentStats()` - Statistics
-- `getCategoryOptions()` - Get available categories
-- `getSubcategoryOptions()` - Get available subcategories
-- `findOne()` - Get by ID
-- `update()` - Update equipment item
-- `remove()` - Delete equipment item
-
-### Common Services
-
-#### CloudinaryService
-- `uploadSignature()` - Upload base64 signature image to Cloudinary
-  - Folder: `signatures/`
-  - Public ID format: `signature-{userId}-{timestamp}`
-
-#### GmailService (Nodemailer)
-- `sendFormReceivedEmail()` - Email template for new form
-- `sendFormStatusUpdateEmail()` - Email template for status update
-- `sendRoleUpdateEmail()` - Email template for role change
-- `sendFormMovedEmail()` - Email template for form transfer
-- `sendFollowUpEmail()` - Email template for follow-up
-- `sendEmail()` - Generic email sending with fallback (587 STARTTLS)
-
-#### TwilioService
-- SMS notification support (currently commented out)
-- Phone number validation and formatting
-
-#### ResendService
-- Alternative email service (configured but GmailService is primary)
+### Alerts Gateway
+- **Connection**: JWT authenticated
+- **Events**:
+  - `join` - Join user room
+  - `alert` - Receive alert notification
+- **Rooms**: User-specific rooms by userId
 
 ---
 
-## 🔒 Authentication & Authorization
+## 🗄️ Database Models (Schemas)
 
-### JWT Authentication
-- **Strategy**: Passport JWT
-- **Token Expiration**: 7 days (Auth), 60 minutes (User module)
-- **Extraction**: Bearer token from Authorization header
-- **Payload**: `{ username, sub (userId), role }`
-
-### Guards
-- **JwtAuthGuard**: Validates JWT token on protected routes
-- **RolesGuard**: Enforces role-based access control
-
-### Roles Hierarchy
-1. **Staff** - Basic user
-2. **Supervisor** - Elevated permissions
-3. **Management** - Management level
-4. **Super-Admin** - Full system access
-
-### Role-Based Access
-- **Items**: Create/Update (Admin/Super-Admin), Delete (Super-Admin only)
-- **Inventory/Equipment**: All operations (Admin/Super-Admin)
-- **User Deletion**: Super-Admin only
-- **All Alerts**: Super-Admin only
+1. **User** - User accounts with roles
+2. **Form** - Form submissions with history
+3. **Alert** - Notification system
+4. **Contact** - Contact form submissions
+5. **Item** - General items
+6. **InventoryItem** - Inventory management
+7. **EquipmentItem** - Equipment management
+8. **OperationalAlert** - Operational alerts
+9. **Category** - Categories with subcategories
+10. **Actions** - Action definitions
+11. **UnitOfMeasure** - Inventory unit measurements
+12. **Packaging** - Inventory packaging types
+13. **ReasonCode** - Equipment reason codes
 
 ---
 
-## 🎯 Key Features
-
-### Form Management
-- Form submission with recipient assignment (user ID or role)
-- Status tracking with history (Pending, In-Progress, Completed, etc.)
-- Digital signature upload to Cloudinary
-- Form movement/transfer between users
-- Follow-up reminders
-
-### Alert System
-- **Multi-channel notifications**:
-  - In-app (WebSocket real-time)
-  - Email (HTML templates via Gmail SMTP)
-  - SMS (Twilio - configured but commented)
-- **Alert categories**: in-app, email, sms
-- **Smart targeting**: By user ID, role, or multiple users
-- **Email templates**: Context-aware templates for different events
-
-### Dashboard & Analytics
-- Time-based statistics (today, 7 days, 30 days)
-- Form category breakdowns
-- Performance metrics (completion times)
-- Status distribution analytics
-
-### Item Management
-- **Inventory**: Perishable items, essential items, reorder levels, unit of measure
-- **Equipment**: Category/subcategory organization, location tracking
-- **Operational Alerts**: Various alert types with action requirements
-
-### Security Features
-- Password hashing with bcrypt
-- JWT-based authentication
-- Role-based access control (RBAC)
-- CORS enabled for frontend integration
-
----
-
-## 🔌 External Integrations
-
-### MongoDB (Mongoose)
-- Connection URI from `MONGODB_URI` environment variable
-- Connection logging and error handling
-- Auto-indexing on schemas
-
-### Cloudinary
-- Image upload for signatures
-- Configuration: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-
-### Gmail SMTP
-- Configuration: `GMAIL_SMTP_HOST`, `GMAIL_SMTP_PORT`, `GMAIL_SMTP_USER`, `GMAIL_SMTP_PASS`
-- Fallback to STARTTLS (port 587) if secure connection fails
-- HTML email templates
-
-### Twilio
-- SMS notifications (configured but disabled)
-- Configuration: Twilio credentials in environment
-
-### Socket.IO
-- WebSocket real-time notifications
-- JWT authentication for WebSocket connections
-- User-specific rooms for targeted notifications
-
----
-
-## 📝 Environment Variables
+## 🔑 Environment Variables
 
 Required environment variables:
-```env
-# Server
-PORT=5000
-FRONTEND_URL=http://localhost:3000
-
-# Database
-MONGODB_URI=mongodb://...
-
-# JWT
-JWT_SECRET=your-secret-key
-
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
-
-# Gmail SMTP
-GMAIL_SMTP_HOST=smtp.gmail.com
-GMAIL_SMTP_PORT=465
-GMAIL_SMTP_SECURE=true
-GMAIL_SMTP_USER=...
-GMAIL_SMTP_PASS=...
-GMAIL_SENDER_NAME=Lindo Mart
-GMAIL_SENDER_EMAIL=...
-
-# Twilio (Optional)
-TWILIO_ACCOUNT_SID=...
-TWILIO_AUTH_TOKEN=...
-TWILIO_PHONE_NUMBER=...
-```
+- `MONGODB_URI` - MongoDB connection string
+- `JWT_SECRET` - JWT signing secret
+- `PORT` - Server port (default: 5000)
+- `CLOUDINARY_CLOUD_NAME` - Cloudinary cloud name
+- `CLOUDINARY_API_KEY` - Cloudinary API key
+- `CLOUDINARY_API_SECRET` - Cloudinary API secret
+- `GMAIL_SMTP_HOST` - Gmail SMTP host
+- `GMAIL_SMTP_PORT` - Gmail SMTP port
+- `GMAIL_SMTP_USER` - Gmail SMTP username
+- `GMAIL_SMTP_PASS` - Gmail SMTP password
+- `RESEND_API_KEY` - Resend API key (optional)
+- `TWILIO_ACCOUNT_SID` - Twilio account SID (optional)
+- `TWILIO_AUTH_TOKEN` - Twilio auth token (optional)
+- `TWILIO_PHONE_NUMBER` - Twilio phone number (optional)
+- `FRONTEND_URL` - Frontend URL for email links
 
 ---
 
-## 🚀 Technology Stack
+## 🚀 Key Features
 
-- **Framework**: NestJS (Node.js)
-- **Language**: TypeScript
-- **Database**: MongoDB (Mongoose ODM)
-- **Authentication**: Passport JWT
-- **Real-time**: Socket.IO
-- **File Upload**: Cloudinary
-- **Email**: Nodemailer (Gmail SMTP)
-- **SMS**: Twilio (configured, disabled)
-- **Validation**: class-validator, class-transformer
-- **Testing**: Jest
-
----
-
-## 📦 Module Dependencies
-
-```
-AppModule
-├── ConfigModule (Global)
-├── MongooseModule (Global)
-├── AuthModule
-│   ├── UserModule (for alerts)
-│   └── CommonModule (Twilio, Gmail)
-├── UserModule
-│   └── AlertsModule (forwardRef)
-├── FormsModule
-│   ├── AlertsModule
-│   ├── UserModule
-│   └── CommonModule (Cloudinary)
-├── AlertsModule
-│   ├── UserModule (forwardRef)
-│   └── CommonModule
-├── DashboardModule
-│   ├── FormsModule
-│   └── AlertsModule
-├── ContactModule
-├── ItemsModule
-├── InventoryModule
-├── EquipmentModule
-├── ItemListCommonModule
-└── OperationalAlertsModule
-```
+1. **Multi-role Authentication** - Staff, Supervisor, Management, Super-Admin
+2. **Form Workflow** - Submit, assign, move, track status
+3. **Real-time Alerts** - WebSocket notifications
+4. **Multi-channel Notifications** - Email, SMS, In-app
+5. **Signature Capture** - Cloudinary image uploads
+6. **Dashboard Analytics** - Statistics and metrics
+7. **Inventory Management** - Perishable, essential items tracking
+8. **Equipment Tracking** - Location and maintenance notes
+9. **Operational Alerts** - Multiple alert types
+10. **Category System** - Hierarchical categories with subcategories
+11. **Action System** - Predefined actions for different types
+12. **Pagination & Search** - Efficient data retrieval
+13. **Public Endpoints** - Filtered read-only access
 
 ---
 
-## 🎨 Response Format
+## 📝 Notes
 
-Most endpoints return consistent format:
-```json
-{
-  "success": true,
-  "message": "Operation completed successfully",
-  "data": { ... },
-  "pagination": { ... } // When applicable
-}
-```
-
----
-
-## 🔄 Data Flow Examples
-
-### Form Submission Flow
-1. User submits form via `POST /forms/submit`
-2. Form created with status "Pending"
-3. Alert generated via `AlertsService.sendAlert()`
-4. WebSocket notification sent to recipient
-5. Email notification sent (if recipient has email)
-6. Alert record saved to database
-
-### Form Status Update Flow
-1. User updates status via `PATCH /forms/:id/status`
-2. Signature uploaded to Cloudinary (if provided)
-3. Form status updated
-4. History entry added
-5. (Optional) Alert sent to related users
-
-### Login Flow
-1. User credentials validated
-2. JWT token generated with user payload
-3. Login alert sent to user's email
-4. Token returned to client
+- All routes are prefixed with `/api/v1`
+- Most routes require JWT authentication
+- Role-based access control for admin operations
+- Public endpoints provide limited data (name, description, category, subcategory)
+- Email service uses Gmail SMTP primarily, Resend as alternative
+- SMS functionality is optional (Twilio)
+- Form history tracks all status changes
+- Alert system supports role-based or user-specific targeting
+- WebSocket connections require JWT authentication
+- Cloudinary used for signature image storage
 
 ---
 
-## 📌 Important Notes
+## 🔄 Data Flow
 
-1. **CORS**: Enabled for all origins (`*`) - adjust for production
-2. **Password Security**: Passwords hashed with bcrypt (10 salt rounds)
-3. **Token Expiration**: Different expiration times across modules (check config)
-4. **Email Fallback**: Gmail service has automatic fallback to STARTTLS on connection failure
-5. **WebSocket Auth**: WebSocket connections require JWT token in handshake
-6. **Signature Storage**: Signatures stored in Cloudinary `signatures/` folder
-7. **Form Recipients**: Can be user ID or role name (enables role-based routing)
+1. **Form Submission**:
+   - User submits form → Form created → Alert sent to recipient → Email notification
+
+2. **Status Update**:
+   - User updates form status → History updated → Alert sent → Email notification
+
+3. **Form Movement**:
+   - User moves form → Recipient updated → Alert sent to new recipient → Email notification
+
+4. **Login**:
+   - User logs in → JWT token generated → Login alert sent via email
+
+5. **Role Update**:
+   - Admin updates user role → Role changed → Alert sent → Email notification
 
 ---
 
-This overview covers the complete structure, routes, models, services, and key features of the Lindo Mart API codebase.
-
+This codebase is a comprehensive form management system with inventory, equipment, and operational alert tracking capabilities, featuring real-time notifications and multi-channel communication.

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Alert } from '../schemas/alert/alert.schema';
 import { User } from '../schemas/user/user.schema';
 import { Form } from '../schemas/form/form.schema';
@@ -193,12 +193,15 @@ export class AlertsService {
       .exec();
 
     if (form) {
+      const historyUserId = userId && Types.ObjectId.isValid(userId)
+        ? new Types.ObjectId(userId)
+        : (form.userId as unknown as Types.ObjectId);
       form.history.push({
         status,
         timestamp: new Date(),
-        userId,
-        fromUserId: null,
-        toUserId: null,
+        userId: historyUserId,
+        fromUserId: undefined,
+        toUserId: undefined,
       });
       await form.save();
 

@@ -9,12 +9,13 @@ export class Actions extends Document {
   @Prop({
     required: true,
     enum: [
-      'equipment',
-      'operational-alerts',
-      'handover-alerts',
-      'customer-feedback',
-      'health-safety',
-      'disaster-preparedness'
+      "inventory",
+      "equipment",
+      "operational-alerts",
+      "handover-alerts",
+      "customer-feedback",
+      "health-safety",
+      "disaster-preparedness"
     ],
   })
   type: string;

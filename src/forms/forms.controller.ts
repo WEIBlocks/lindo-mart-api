@@ -7,15 +7,20 @@ import {
   Request,
   UseGuards,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { FormsService } from './forms.service';
+import { FormsMetadataService } from './forms-metadata.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CustomRequest } from '../types/custom-request.interface';
 
 @Controller('/forms')
 @UseGuards(JwtAuthGuard)
 export class FormsController {
-  constructor(private readonly formsService: FormsService) {}
+  constructor(
+    private readonly formsService: FormsService,
+    private readonly formsMetadataService: FormsMetadataService,
+  ) {}
 
   @Post('submit')
   async submitForm(@Request() req: CustomRequest, @Body() formData: any) {
@@ -27,8 +32,11 @@ export class FormsController {
   }
 
   @Get('user-forms')
-  async getUserForms(@Request() req: CustomRequest) {
-    return this.formsService.getUserForms(req.user.userId);
+  async getUserForms(
+    @Request() req: CustomRequest,
+    @Query('formType') formType?: string,
+  ) {
+    return this.formsService.getUserForms(req.user.userId, formType);
   }
 
   @Get('user-form/:id')
@@ -52,5 +60,16 @@ export class FormsController {
       newStatus,
       signatureImage
     );
+  }
+
+  @Get('metadata')
+  async getFormMetadata(@Query('itemListType') itemListType: string) {
+    return this.formsMetadataService
+      .getFormMetadata(itemListType)
+      .then((result) => ({
+        success: true,
+        message: 'Form metadata retrieved successfully',
+        data: result,
+      }));
   }
 }

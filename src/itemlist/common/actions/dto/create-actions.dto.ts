@@ -6,6 +6,7 @@ export class CreateActionsDto {
   description: string;
 
   @IsEnum([
+    "inventory",
     'equipment',
     'operational-alerts',
     'handover-alerts',

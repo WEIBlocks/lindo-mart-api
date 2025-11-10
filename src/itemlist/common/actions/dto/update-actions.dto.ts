@@ -8,6 +8,7 @@ export class UpdateActionsDto {
 
   @IsOptional()
   @IsEnum([
+    "inventory",
     'equipment',
     'operational-alerts',
     'handover-alerts',

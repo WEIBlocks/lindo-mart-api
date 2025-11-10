@@ -1,25 +1,40 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, SchemaTypes, Types } from 'mongoose';
 
 @Schema()
 export class Form extends Document {
-  @Prop({ required: true })
-  userId: string;
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
 
   @Prop({ required: true })
   formType: string;
+  @Prop({ required: true })
+  forDate: Date;
 
-  @Prop({ type: Object, required: true })
-  formData: Record<string, any>;
+  @Prop({ type: [SchemaTypes.Mixed], required: true })
+  formData: Array<Record<string, any>>;
 
   @Prop({ default: 'Pending' })
   status: string;
 
+  @Prop()
+  notes?: string;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 
-  @Prop({ required: true })
-  recipient: string;
+  @Prop({
+    type: String,
+    enum: ['general', 'specific'],
+    required: true,
+  })
+  recipientType: 'general' | 'specific';
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
+  recipient?: Types.ObjectId;
+
+  @Prop()
+  generalRecipient?: string;
 
   @Prop()
   alertId?: string;
@@ -32,9 +47,9 @@ export class Form extends Document {
       {
         status: String,
         timestamp: Date,
-        userId: String,
-        fromUserId: String,
-        toUserId: String,
+        userId: { type: SchemaTypes.ObjectId, ref: 'User' },
+        fromUserId: SchemaTypes.Mixed,
+        toUserId: SchemaTypes.Mixed,
       },
     ],
     default: [],
@@ -42,9 +57,9 @@ export class Form extends Document {
   history: {
     status: string;
     timestamp: Date;
-    userId: string;
-    fromUserId: string;
-    toUserId: string;
+    userId: Types.ObjectId;
+    fromUserId: Types.ObjectId | string;
+    toUserId: Types.ObjectId | string;
   }[];
 }
 

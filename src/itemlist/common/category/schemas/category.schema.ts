@@ -4,6 +4,12 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class Category extends Document {
   @Prop({ required: true })
+
+
+
+
+
+  
   name: string;
 
   @Prop({ type: [String], required: true })
