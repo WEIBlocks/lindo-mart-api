@@ -17,8 +17,11 @@ export class DashboardController {
 
   @Get('admin-stats')
   // TODO: Add Super-Admin Guard
-  async getAdminDashboardStats() {
-    return this.dashboardService.getAdminDashboardStats();
+  async getAdminDashboardStats(@Request() req: CustomRequest) {
+    return this.dashboardService.getAdminDashboardStats(
+      req.user.userId,
+      req.user.role
+    );
   }
 
   @Get('forms')

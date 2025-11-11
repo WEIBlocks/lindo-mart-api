@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { FormsService } from '../forms/forms.service';
 import { AlertsService } from '../alerts/alerts.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from '../schemas/user/user.schema';
 import { Form } from '../schemas/form/form.schema';
 
@@ -15,7 +15,22 @@ export class DashboardService {
     @InjectModel(Form.name) private formModel: Model<Form>
   ) {}
 
-  async getAdminDashboardStats() {
+  async getAdminDashboardStats(userId: string, role: string) {
+    const isSuperAdmin = role === 'Super-Admin';
+
+    let scopeFilter: Record<string, unknown> = {};
+
+    if (!isSuperAdmin) {
+      if (!Types.ObjectId.isValid(userId)) {
+        throw new BadRequestException('Invalid user identifier');
+      }
+
+      scopeFilter = {
+        recipientType: 'specific',
+        recipient: new Types.ObjectId(userId),
+      };
+    }
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const last7Days = new Date(today);
@@ -24,15 +39,15 @@ export class DashboardService {
     last30Days.setDate(today.getDate() - 30);
 
     // Get time-based statistics
-    const todayStats = await this.getTimeBasedStats(today, now);
-    const last7DaysStats = await this.getTimeBasedStats(last7Days, now);
-    const last30DaysStats = await this.getTimeBasedStats(last30Days, now);
+    const todayStats = await this.getTimeBasedStats(today, now, scopeFilter);
+    const last7DaysStats = await this.getTimeBasedStats(last7Days, now, scopeFilter);
+    const last30DaysStats = await this.getTimeBasedStats(last30Days, now, scopeFilter);
 
     // Get form categories with status counts
-    const formCategories = await this.getFormCategoriesStats();
+    const formCategories = await this.getFormCategoriesStats(scopeFilter);
 
     // Get performance metrics
-    const performanceMetrics = await this.getPerformanceMetrics();
+    const performanceMetrics = await this.getPerformanceMetrics(scopeFilter);
 
     return {
       timeBasedStats: {
@@ -66,10 +81,15 @@ export class DashboardService {
     };
   }
 
-  private async getTimeBasedStats(startDate: Date, endDate: Date) {
+  private async getTimeBasedStats(
+    startDate: Date,
+    endDate: Date,
+    scopeFilter: Record<string, unknown> = {}
+  ) {
     const forms = await this.formModel
       .find({
         createdAt: { $gte: startDate, $lte: endDate },
+        ...scopeFilter,
       })
       .exec();
 
@@ -102,20 +122,14 @@ export class DashboardService {
     return stats;
   }
 
-  private async getFormCategoriesStats() {
+  private async getFormCategoriesStats(
+    scopeFilter: Record<string, unknown> = {}
+  ) {
     // Define form categories based on formType
     const categories = [
       {
-        name: 'Inventory Exceptions',
-        types: ['inventory-exception', 'inventory exception', 'inventory'],
-      },
-      {
-        name: 'Slow Moving Items',
+        name: 'Slow moving items',
         types: ['slow-moving-items', 'slow moving items', 'slow-moving'],
-      },
-      {
-        name: 'Essentials Alerts',
-        types: ['essentials-alerts', 'essentials alerts', 'essentials'],
       },
       {
         name: 'Equipment & Facility Alerts',
@@ -129,10 +143,10 @@ export class DashboardService {
       {
         name: 'Alert Reminders & Follow Ups',
         types: [
-          'alert-reminders',
-          'alert reminders',
-          'follow-ups',
-          'follow ups',
+          'reminder-followup',
+          'reminder followup',
+          'follow-up',
+          'follow up',
         ],
       },
       {
@@ -140,12 +154,20 @@ export class DashboardService {
         types: ['handover-notes', 'handover notes', 'handover'],
       },
       {
-        name: 'Customer Feedback',
-        types: ['customer-feedback', 'customer feedback', 'feedback'],
+        name:"Essentials Alerts",
+        types: ['essentials-alerts', 'essentials alerts', 'essentials'],
       },
       {
         name: 'Health & Safety Alerts',
         types: ['health-safety', 'health safety', 'safety'],
+      },
+      {
+        name: 'Disaster Preparedness',
+        types: [
+          'disaster-preparedness',
+          'disaster preparedness',
+          'preparedness',
+        ],
       },
     ];
 
@@ -156,6 +178,7 @@ export class DashboardService {
             formType: {
               $in: category.types.map((type) => new RegExp(type, 'i')),
             },
+            ...scopeFilter,
           })
           .exec();
 
@@ -195,11 +218,14 @@ export class DashboardService {
     return categoryStats;
   }
 
-  private async getPerformanceMetrics() {
+  private async getPerformanceMetrics(
+    scopeFilter: Record<string, unknown> = {}
+  ) {
     const completedForms = await this.formModel
       .find({
         status: 'completed',
         $expr: { $gte: [{ $size: '$history' }, 2] }, // At least 2 history entries (created + completed)
+        ...scopeFilter,
       })
       .exec();
 
@@ -246,7 +272,6 @@ export class DashboardService {
   }
 
   async getUserRelatedForms(userId: string) {
-
     return this.formsService.getUserRelatedForms(userId);
   }
 
