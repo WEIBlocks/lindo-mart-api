@@ -359,34 +359,48 @@ export class FormsService {
     // First, get the user to check their role
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
+      
       throw new NotFoundException('User not found');
     }
 
-    // Find forms where:
-    // 1. The user is directly specified as the recipient
-    // 2. The user's role is specified as the recipient
+    const formatForms = (forms: Array<Form>) =>
+      forms.map((form) => {
+        const formObj: any = form.toObject();
+        if (formObj.recipientType === 'general') {
+          formObj.recipient = formObj.generalRecipient || 'general';
+        }
+        return formObj;
+      });
+
+    // Super Admin can view all forms without filtering
+    if (user.role === 'Super-Admin') {
+      const allForms = await this.formModel
+        .find()
+        .select('-formData -history')
+        .populate('userId', 'username role')
+        .populate({
+          path: 'recipient',
+          select: 'username role',
+          strictPopulate: false,
+        })
+        .exec();
+
+      return formatForms(allForms);
+    }
+
     const userObjectId = Types.ObjectId.isValid(userId)
       ? new Types.ObjectId(userId)
       : null;
 
-    const recipientConditions = [];
-    if (userObjectId) {
-      recipientConditions.push({
-        recipientType: 'specific',
-        recipient: userObjectId,
-      });
+    if (!userObjectId) {
+      return [];
     }
-    recipientConditions.push(
-      ...[user.role, 'general']
-        .filter((target) => typeof target === 'string' && target.length > 0)
-        .map((target) => ({
-          recipientType: 'general',
-          generalRecipient: target,
-        }))
-    );
 
     const forms = await this.formModel
-      .find({ $or: recipientConditions })
+      .find({
+        recipientType: 'specific',
+        recipient: userObjectId,
+      })
       .select('-formData -history')
       .populate('userId', 'username role')
       .populate({
@@ -397,13 +411,7 @@ export class FormsService {
       .exec();
 
     // Format general forms to show generalRecipient
-    return forms.map((form) => {
-      const formObj: any = form.toObject();
-      if (formObj.recipientType === 'general') {
-        formObj.recipient = formObj.generalRecipient || 'general';
-      }
-      return formObj;
-    });
+    return formatForms(forms);
   }
 
   async moveForm(
